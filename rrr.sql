@@ -1,23 +1,24 @@
 -- phpMyAdmin SQL Dump
--- version 4.3.11
--- http://www.phpmyadmin.net
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 25, 2019 at 08:15 AM
--- Server version: 5.6.24
--- PHP Version: 5.5.24
+-- Generation Time: Sep 12, 2026 at 10:11 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
 SET time_zone = "+00:00";
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `aclc_ramp_db`
+-- Database: `rrr`
 --
 
 -- --------------------------------------------------------
@@ -26,11 +27,11 @@ SET time_zone = "+00:00";
 -- Table structure for table `online_judges`
 --
 
-CREATE TABLE IF NOT EXISTS `online_judges` (
+CREATE TABLE `online_judges` (
   `session_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `time` int(20) NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
 
@@ -38,13 +39,13 @@ CREATE TABLE IF NOT EXISTS `online_judges` (
 -- Table structure for table `tbl_candidates`
 --
 
-CREATE TABLE IF NOT EXISTS `tbl_candidates` (
+CREATE TABLE `tbl_candidates` (
   `cand_id` int(11) NOT NULL,
   `cand_no` varchar(11) NOT NULL DEFAULT '0',
   `cand_name` varchar(50) NOT NULL,
   `cand_pic` varchar(200) NOT NULL DEFAULT 'default-user.png',
   `status` enum('Allow','Eliminate') NOT NULL DEFAULT 'Allow'
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `tbl_candidates`
@@ -78,12 +79,12 @@ INSERT INTO `tbl_candidates` (`cand_id`, `cand_no`, `cand_name`, `cand_pic`, `st
 -- Table structure for table `tbl_category`
 --
 
-CREATE TABLE IF NOT EXISTS `tbl_category` (
+CREATE TABLE `tbl_category` (
   `category_id` int(11) NOT NULL,
   `category_name` varchar(50) NOT NULL,
-  `percentage` int(11) NOT NULL DEFAULT '0',
+  `percentage` int(11) NOT NULL DEFAULT 0,
   `status` enum('Show','Hide') NOT NULL DEFAULT 'Show'
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `tbl_category`
@@ -101,21 +102,21 @@ INSERT INTO `tbl_category` (`category_id`, `category_name`, `percentage`, `statu
 -- Table structure for table `tbl_config`
 --
 
-CREATE TABLE IF NOT EXISTS `tbl_config` (
+CREATE TABLE `tbl_config` (
   `config_id` int(11) NOT NULL,
   `event_title` varchar(50) NOT NULL,
   `based_type` enum('Candidate','House') NOT NULL DEFAULT 'House',
   `prompt_msg` varchar(200) NOT NULL,
   `chairman_status` enum('Open','Close') NOT NULL DEFAULT 'Open',
   `judge_status` enum('Open','Close') NOT NULL DEFAULT 'Open'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `tbl_config`
 --
 
 INSERT INTO `tbl_config` (`config_id`, `event_title`, `based_type`, `prompt_msg`, `chairman_status`, `judge_status`) VALUES
-(1, 'RAMP REIGN AND RUNWAY 2019', 'House', 'Judging is now closed. Thank you.', 'Close', 'Close');
+(1, 'RAMP REIGN AND RUNWAY 2026', 'House', 'Judging is now closed. Thank you.', 'Close', 'Close');
 
 -- --------------------------------------------------------
 
@@ -123,14 +124,14 @@ INSERT INTO `tbl_config` (`config_id`, `event_title`, `based_type`, `prompt_msg`
 -- Table structure for table `tbl_criteria`
 --
 
-CREATE TABLE IF NOT EXISTS `tbl_criteria` (
+CREATE TABLE `tbl_criteria` (
   `criteria_id` int(11) NOT NULL,
   `criteria_name` varchar(50) NOT NULL,
-  `criteria_points` int(11) NOT NULL DEFAULT '0',
+  `criteria_points` int(11) NOT NULL DEFAULT 0,
   `criteria_descrp` varchar(50) NOT NULL,
   `category_id` int(11) NOT NULL,
   `status` enum('Show','Hide') NOT NULL DEFAULT 'Show'
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `tbl_criteria`
@@ -159,15 +160,15 @@ INSERT INTO `tbl_criteria` (`criteria_id`, `criteria_name`, `criteria_points`, `
 -- Table structure for table `tbl_scores`
 --
 
-CREATE TABLE IF NOT EXISTS `tbl_scores` (
+CREATE TABLE `tbl_scores` (
   `score_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL,
   `criteria_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `cand_id` int(11) NOT NULL,
-  `score_points` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `date_saved` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+  `score_points` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `date_saved` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
 
@@ -175,14 +176,14 @@ CREATE TABLE IF NOT EXISTS `tbl_scores` (
 -- Table structure for table `tbl_users`
 --
 
-CREATE TABLE IF NOT EXISTS `tbl_users` (
+CREATE TABLE `tbl_users` (
   `user_id` int(11) NOT NULL,
   `full_name` varchar(50) NOT NULL,
   `user_name` varchar(50) NOT NULL,
   `pass_word` varchar(50) NOT NULL,
   `user_type` enum('Admin','Chairman','Judge') NOT NULL DEFAULT 'Judge',
   `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active'
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `tbl_users`
@@ -204,7 +205,8 @@ INSERT INTO `tbl_users` (`user_id`, `full_name`, `user_name`, `pass_word`, `user
 -- Indexes for table `online_judges`
 --
 ALTER TABLE `online_judges`
-  ADD PRIMARY KEY (`session_id`), ADD KEY `user_id` (`user_id`);
+  ADD PRIMARY KEY (`session_id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `tbl_candidates`
@@ -228,19 +230,25 @@ ALTER TABLE `tbl_config`
 -- Indexes for table `tbl_criteria`
 --
 ALTER TABLE `tbl_criteria`
-  ADD PRIMARY KEY (`criteria_id`), ADD KEY `category_id` (`category_id`);
+  ADD PRIMARY KEY (`criteria_id`),
+  ADD KEY `category_id` (`category_id`);
 
 --
 -- Indexes for table `tbl_scores`
 --
 ALTER TABLE `tbl_scores`
-  ADD PRIMARY KEY (`score_id`), ADD KEY `criteria_id` (`criteria_id`), ADD KEY `user_id` (`user_id`), ADD KEY `cand_id` (`cand_id`), ADD KEY `category_id` (`category_id`);
+  ADD PRIMARY KEY (`score_id`),
+  ADD KEY `criteria_id` (`criteria_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `cand_id` (`cand_id`),
+  ADD KEY `category_id` (`category_id`);
 
 --
 -- Indexes for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
-  ADD PRIMARY KEY (`user_id`), ADD UNIQUE KEY `user_name` (`user_name`);
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `user_name` (`user_name`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -250,32 +258,38 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `online_judges`
 --
 ALTER TABLE `online_judges`
-  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=6;
+  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
 --
 -- AUTO_INCREMENT for table `tbl_candidates`
 --
 ALTER TABLE `tbl_candidates`
-  MODIFY `cand_id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=21;
+  MODIFY `cand_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
 --
 -- AUTO_INCREMENT for table `tbl_category`
 --
 ALTER TABLE `tbl_category`
-  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=6;
+  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
 --
 -- AUTO_INCREMENT for table `tbl_criteria`
 --
 ALTER TABLE `tbl_criteria`
-  MODIFY `criteria_id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=19;
+  MODIFY `criteria_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
 --
 -- AUTO_INCREMENT for table `tbl_scores`
 --
 ALTER TABLE `tbl_scores`
-  MODIFY `score_id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=4;
+  MODIFY `score_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
 --
 -- AUTO_INCREMENT for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=7;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
 --
 -- Constraints for dumped tables
 --
@@ -284,22 +298,23 @@ ALTER TABLE `tbl_users`
 -- Constraints for table `online_judges`
 --
 ALTER TABLE `online_judges`
-ADD CONSTRAINT `online_judges_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`user_id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `online_judges_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`user_id`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `tbl_criteria`
 --
 ALTER TABLE `tbl_criteria`
-ADD CONSTRAINT `tbl_criteria_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `tbl_category` (`category_id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `tbl_criteria_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `tbl_category` (`category_id`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `tbl_scores`
 --
 ALTER TABLE `tbl_scores`
-ADD CONSTRAINT `tbl_scores_ibfk_1` FOREIGN KEY (`cand_id`) REFERENCES `tbl_candidates` (`cand_id`) ON UPDATE CASCADE,
-ADD CONSTRAINT `tbl_scores_ibfk_2` FOREIGN KEY (`criteria_id`) REFERENCES `tbl_criteria` (`criteria_id`) ON UPDATE CASCADE,
-ADD CONSTRAINT `tbl_scores_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`user_id`) ON UPDATE CASCADE,
-ADD CONSTRAINT `tbl_scores_ibfk_4` FOREIGN KEY (`category_id`) REFERENCES `tbl_category` (`category_id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `tbl_scores_ibfk_1` FOREIGN KEY (`cand_id`) REFERENCES `tbl_candidates` (`cand_id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `tbl_scores_ibfk_2` FOREIGN KEY (`criteria_id`) REFERENCES `tbl_criteria` (`criteria_id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `tbl_scores_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`user_id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `tbl_scores_ibfk_4` FOREIGN KEY (`category_id`) REFERENCES `tbl_category` (`category_id`) ON UPDATE CASCADE;
+COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

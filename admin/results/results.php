@@ -36,7 +36,13 @@
 
 	$('#records').load('results/view.php');
 
-	<?php include '../config/config.php'; ?>
+	<?php 
+	include '../config/config.php'; 
+
+	$y = (int) date('Y');
+	$academicYear = "{$y}-" . ($y + 1);
+
+	?>
 
 	function PrintElem(elem, labelTitle)
 	{
@@ -54,7 +60,7 @@
 	    mywindow.document.write('<center>');
 	    mywindow.document.write('<h1>');
 	    mywindow.document.write("<img src='../images/header_logo.png' style='width: 36px; height: 36px;'>");
-	    mywindow.document.write(' ACLC House Cup 2023-2024 - ACLC WEEK');
+	    mywindow.document.write(' ACLC House Cup <?= $academicYear ?> - ACLC WEEK');
 	    mywindow.document.write('</h1>');
 	    mywindow.document.write('</center>');
 
