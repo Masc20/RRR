@@ -53,14 +53,15 @@
                       s.cand_id = '$candId' ";
 
         $resultScore = $conn->query($sql);
-        $row = $resultScore->fetch_assoc();
-
-        $score = $row['score_points'];
 
         if ($resultScore->num_rows > 0) {
-
-          $isUpdateOk = true;
+            $row = $resultScore->fetch_assoc();
+            $score = $row['score_points'];
+            $isUpdateOk = true;
+        } else {
+            $score = null;
         }
+        
       ?>
 
       <div class="row">
