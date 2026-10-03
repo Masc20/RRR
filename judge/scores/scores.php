@@ -11,13 +11,11 @@
 ?>
 
 
-<!-- Breadcrumbs-->
-<ol class="breadcrumb">
-  <li class="breadcrumb-item">
-    <a href=""><?php echo $type; ?>s</a>
-  </li>
-  <li class="breadcrumb-item active">Scores</li>
-</ol>
+<div class="judge-score-heading">
+  <p class="judge-kicker">Judge workspace</p>
+  <h1>My scores</h1>
+  <p>Review your submitted scores by judging category.</p>
+</div>
 
 <div id="scores"></div>
 

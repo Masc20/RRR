@@ -1,5 +1,5 @@
 <!-- Form Modal-->
-<div class="modal fade" id="formModal" tabindex="-1" role="dialog" 
+<div class="modal fade judge-modal" id="formModal" tabindex="-1" role="dialog" 
   aria-labelledby="formModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false"> 
   <div class="modal-dialog formDialog modal-lg" role="document">
       <div class="modal-content">

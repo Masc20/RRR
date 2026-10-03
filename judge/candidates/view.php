@@ -12,10 +12,76 @@
   $row = $resultConfig->fetch_assoc();
 
   $type = $row['based_type'];
+  $houseGroups = array();
+  $houseTotal = 0;
+
+  if ($type == 'House') {
+    $houseResult = $conn->query("SELECT cand_name, COUNT(*) AS house_count
+                                 FROM tbl_candidates
+                                 WHERE status = 'Allow'
+                                 GROUP BY cand_name
+                                 ORDER BY cand_name ASC");
+
+    while ($houseRow = $houseResult->fetch_assoc()) {
+      $houseGroups[] = $houseRow;
+      $houseTotal += (int) $houseRow['house_count'];
+    }
+  }
 
 ?>
 
-<div class="row">
+<div class="judge-workspace">
+  <aside class="judge-rail" aria-label="House and scoring filters">
+    <p class="judge-rail-title">Categories</p>
+    <div class="judge-filter-list judge-house-list" role="group" aria-label="Filter contestants">
+      <button type="button" class="judge-filter judge-house-filter active" data-house-filter="all">
+        <span>All houses</span><span class="judge-filter-count"><?php echo $houseTotal; ?></span>
+      </button>
+      <?php foreach ($houseGroups as $houseGroup) { ?>
+        <button type="button" class="judge-filter judge-house-filter" data-house-filter="<?php echo htmlspecialchars(strtolower($houseGroup['cand_name']), ENT_QUOTES, 'UTF-8'); ?>">
+          <span><?php echo htmlspecialchars($houseGroup['cand_name'], ENT_QUOTES, 'UTF-8'); ?></span>
+          <span class="judge-filter-count"><?php echo (int) $houseGroup['house_count']; ?></span>
+        </button>
+      <?php } ?>
+    </div>
+
+    <p class="judge-rail-title judge-status-title">Scoring status</p>
+    <div class="judge-filter-list judge-status-list" role="group" aria-label="Filter by scoring status">
+      <button type="button" class="judge-filter judge-status-filter active" data-status-filter="all">
+        <span>All contestants</span><span class="judge-filter-count" id="judgeCountAll">0</span>
+      </button>
+      <button type="button" class="judge-filter judge-status-filter" data-status-filter="pending">
+        <span>Needs scoring</span><span class="judge-filter-count" id="judgeCountPending">0</span>
+      </button>
+      <button type="button" class="judge-filter judge-status-filter" data-status-filter="scored">
+        <span>Scored</span><span class="judge-filter-count" id="judgeCountScored">0</span>
+      </button>
+    </div>
+    <div class="judge-progress">
+      <div class="judge-progress-head">
+        <span>Judging progress</span>
+        <span class="judge-progress-value" id="judgeProgressValue">0 / 0</span>
+      </div>
+      <div class="judge-progress-track" aria-hidden="true">
+        <div class="judge-progress-fill" id="judgeProgressFill" style="width: 0%"></div>
+      </div>
+      <p class="judge-progress-note">Contestants with submitted scores</p>
+    </div>
+  </aside>
+
+  <section class="judge-board" aria-label="Contestants">
+    <header class="judge-board-head">
+      <div>
+        <h1><?php echo htmlspecialchars($type, ENT_QUOTES, 'UTF-8'); ?> scoring</h1>
+        <p class="judge-board-subtitle">Open a contestant to score each active judging category.</p>
+      </div>
+      <div class="judge-board-tools">
+        <input type="search" id="judgeCandidateSearch" class="judge-search" placeholder="Search contestants" aria-label="Search contestants">
+        <span class="judge-result-count" id="judgeResultCount" aria-live="polite"></span>
+      </div>
+    </header>
+
+    <div class="judge-candidate-grid" id="judgeCandidateGrid">
 
 <?php  
 
@@ -77,57 +143,28 @@
 ?>
 
 
-    <div class="col-xl-4 col-sm-6 mb-3">
-      <div class="card">
-        <div class="card-header <?php if ($updateOk == 1) echo('text-white bg-primary');?>">
-           <h5><?php echo $type; ?> No <span class="badge badge-pill  <?php 
-                                                        if ($updateOk == 1) {
-                                                          echo('badge-light');
-                                                        } else {
-                                                          echo('badge-primary');
-                                                        }
-                                                      ?>">
-                                        <?php echo $candNo; ?>
-                                      </span></h5>
-        </div>
-        <div class="card-body">
-
-          <div class="row">
-            <div class="col">
-              <img src="../uploads/<?php echo $candPic; ?>" width="120" 
-                class="img-rounded img-thumbnail img-responsive myImg" 
-                alt="<h5>Candidate No. <?php echo $candNo; ?> <br> <?php echo $candName; ?></h5>">
-            </div>
-            <div class="col">
-              <label><?php echo $candName; ?></label>
-              <br>
-              <button class="btn  <?php 
-                                    if ($updateOk == 1) {
-                                      echo('btn-primary');
-                                    } else {
-                                      echo('btn-outline-primary');
-                                    }
-                                  ?>" 
-                      data-toggle="modal" data-target="#formModal"
-                      onclick="
-                              openTabs('<?php echo $label; ?>', 
-                                        '<?php echo $candId; ?>');
-                              ">
-                <?php 
-                  if ($updateOk == 1) {
-                    echo("Scored <i class='fa fa-check'></i>");
-                  } else {
-                    echo("Score <i class='fa fa-star'></i>");
-                  }
-                ?>
-                
-              </button>
-            </div>
-          </div>
-          
-        </div> 
+    <article class="judge-candidate <?php echo $updateOk == 1 ? 'is-scored' : 'is-pending'; ?>"
+             data-score-state="<?php echo $updateOk == 1 ? 'scored' : 'pending'; ?>"
+         data-house="<?php echo $type == 'House' ? htmlspecialchars(strtolower($candName), ENT_QUOTES, 'UTF-8') : ''; ?>"
+             data-search="<?php echo htmlspecialchars(strtolower($candName . ' ' . $candNo), ENT_QUOTES, 'UTF-8'); ?>">
+      <div class="judge-candidate-photo">
+        <img src="../uploads/<?php echo rawurlencode($candPic); ?>" class="myImg"
+             alt="<?php echo htmlspecialchars($type . ' ' . $candNo . ' - ' . $candName, ENT_QUOTES, 'UTF-8'); ?>"
+             loading="lazy">
+        <span class="judge-candidate-number"><?php echo htmlspecialchars($type, ENT_QUOTES, 'UTF-8'); ?> #<?php echo htmlspecialchars($candNo, ENT_QUOTES, 'UTF-8'); ?></span>
+        <span class="judge-candidate-status"><?php echo $updateOk == 1 ? 'Scored' : 'To score'; ?></span>
       </div>
-    </div>
+      <div class="judge-candidate-info">
+        <h2><?php echo htmlspecialchars($candName, ENT_QUOTES, 'UTF-8'); ?></h2>
+        <p><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></p>
+        <button type="button" class="judge-score-button" data-toggle="modal" data-target="#formModal"
+                data-cand-id="<?php echo htmlspecialchars($candId, ENT_QUOTES, 'UTF-8'); ?>"
+                data-cand-label="<?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?>">
+          <i class="fa <?php echo $updateOk == 1 ? 'fa-pencil' : 'fa-star'; ?>" aria-hidden="true"></i>
+          <span><?php echo $updateOk == 1 ? 'Review scores' : 'Score contestant'; ?></span>
+        </button>
+      </div>
+    </article>
 
 <?php
 
@@ -138,6 +175,9 @@ $conn->close();
 
 ?>
 
+    </div>
+    <div class="judge-empty-state" id="judgeEmptyState">No contestants match this filter.</div>
+  </section>
 </div>
 
 <script>
@@ -168,6 +208,62 @@ $conn->close();
     });
   }
 
+  function refreshJudgeCandidates(animateCards) {
+    var cards = $('.judge-candidate');
+    var scored = cards.filter('[data-score-state="scored"]').length;
+    var pending = cards.length - scored;
+    var activeHouse = $('.judge-house-filter.active').data('house-filter') || 'all';
+    var activeStatus = $('.judge-status-filter.active').data('status-filter') || 'all';
+    var searchTerm = ($('#judgeCandidateSearch').val() || '').toLowerCase().trim();
+    var visibleCount = 0;
+
+    $('#judgeCountAll').text(cards.length);
+    $('#judgeCountPending').text(pending);
+    $('#judgeCountScored').text(scored);
+    $('#judgeProgressValue').text(scored + ' / ' + cards.length);
+    $('#judgeProgressFill').css('width', (cards.length ? scored / cards.length * 100 : 0) + '%');
+
+    cards.each(function() {
+      var card = $(this);
+      var houseMatches = activeHouse === 'all' || card.data('house') === activeHouse;
+      var stateMatches = activeStatus === 'all' || card.data('score-state') === activeStatus;
+      var searchMatches = !searchTerm || card.data('search').indexOf(searchTerm) !== -1;
+      var visible = houseMatches && stateMatches && searchMatches;
+      card.toggle(visible);
+      if (visible) {
+        visibleCount++;
+        if (animateCards) {
+          card.removeClass('is-entering');
+          void card[0].offsetWidth;
+          card.addClass('is-entering');
+        }
+      }
+    });
+
+    $('#judgeResultCount').text('Showing ' + visibleCount + ' of ' + cards.length);
+    $('#judgeEmptyState').toggleClass('is-visible', visibleCount === 0);
+  }
+
+  $('.judge-house-filter').off('click.judge').on('click.judge', function() {
+    $('.judge-house-filter').removeClass('active');
+    $(this).addClass('active');
+    refreshJudgeCandidates(true);
+  });
+
+  $('.judge-status-filter').off('click.judge').on('click.judge', function() {
+    $('.judge-status-filter').removeClass('active');
+    $(this).addClass('active');
+    refreshJudgeCandidates(true);
+  });
+
+  $('#judgeCandidateSearch').off('input.judge').on('input.judge', refreshJudgeCandidates);
+
+  $('.judge-score-button').off('click.judge').on('click.judge', function() {
+    openTabs($(this).data('cand-label'), $(this).data('cand-id'));
+  });
+
+  refreshJudgeCandidates();
+
   // Get the modal
   var modal = document.getElementById('myModal');
 
@@ -179,7 +275,7 @@ $conn->close();
     modal.style.display = "block";
     var newSrc = this.src;
     modalImg.attr('src', newSrc);
-    captionText.innerHTML = this.alt;
+    captionText.textContent = this.alt;
   });
 
   // Get the <span> element that closes the modal

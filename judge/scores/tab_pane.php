@@ -28,10 +28,10 @@
 
 ?>
 
-  <div id="menu<?php echo $categoryId;?>" class="container tab-pane fade"><br>
+  <div id="menu<?php echo $categoryId;?>" class="container tab-pane fade judge-score-pane"><br>
 
     <!-- Example DataTables Card-->
-    <div class="card mb-3">
+    <div class="card mb-3 judge-score-panel">
 
       <div class="card-header">
         <i class="fa fa-table"></i> <?php echo $categoryName; ?> Score
@@ -53,7 +53,7 @@
 
         ?>
 
-        <table class="table table-bordered table-hover table-sm dataTable" width="100%" cellspacing="0">
+        <table class="table table-bordered table-hover table-sm dataTable judge-score-table" width="100%" cellspacing="0">
 
         <!-- table header -->
         <thead>

@@ -23,7 +23,7 @@
 
 ?>
       <li class="nav-item">
-        <a class="nav-link <?php 
+        <a class="nav-link judge-score-category-tab <?php 
 
                             if ($isFirst == true) {
 
@@ -33,9 +33,7 @@
                               echo "active";
                             }
                           ?>" 
-        data-toggle="tab" href="#" onclick = "
-                                              openScore($('input[name=candId]').val(), '<?php echo $categoryId; ?>');
-                                            ">
+        href="#" onclick="return changeScoreCategory('<?php echo $categoryId; ?>', this);">
                     
           <?php echo $categoryName; ?>
         </a>
@@ -67,6 +65,14 @@
 
 <script>
 
+  var scoreFormDirty = false;
+  var scoreCategoryBusy = false;
+
+  $(document).off('input.judgeScoreDirty', '#scoreform .slider')
+    .on('input.judgeScoreDirty', '#scoreform .slider', function() {
+      scoreFormDirty = true;
+    });
+
   $(document).ready(function(){
     
     openScore($('input[name=candId]').val(), '<?php echo $firstCategoryId; ?>');
@@ -74,7 +80,7 @@
 
   function openScore(cid, catid) {
 
-    $('#scoreform').html(null);
+    $('#scoreform').removeClass('judge-content-entering').html(null);
     $('#tot').html(null);
 
     $('#scoreform').load('candidates/tab_content.php',{
@@ -87,8 +93,19 @@
       if (status == 'success') {
 
         getTotal();
+        scoreFormDirty = false;
+        $('#scoreform').removeClass('judge-content-entering');
+        void $('#scoreform')[0].offsetWidth;
+        $('#scoreform').addClass('judge-content-entering');
+        scoreCategoryBusy = false;
+        $('.judge-score-category-tab').removeClass('disabled');
+        $('#btnSave').prop('disabled', false);
         
       } else {
+
+        scoreCategoryBusy = false;
+        $('.judge-score-category-tab').removeClass('disabled');
+        $('#btnSave').prop('disabled', false);
 
         $.notify('Request Failed ! Please Check your Connection and Try Again', {
 
@@ -100,6 +117,67 @@
 
     });
 
+  }
+
+  function changeScoreCategory(catid, tab) {
+    if (scoreCategoryBusy) {
+      return false;
+    }
+
+    var candidateId = $('input[name=candId]').val();
+    var currentCategoryId = $('input[name=categoryId]').val();
+    var loadSelectedCategory = function() {
+      $('.judge-score-category-tab').removeClass('active');
+      $(tab).addClass('active');
+      scoreCategoryBusy = true;
+      $('.judge-score-category-tab').addClass('disabled');
+      $('#btnSave').prop('disabled', true);
+      openScore(candidateId, catid);
+    };
+
+    if (currentCategoryId === catid) {
+      return false;
+    }
+
+    if (!scoreFormDirty || !currentCategoryId) {
+      loadSelectedCategory();
+      return false;
+    }
+
+    scoreCategoryBusy = true;
+    $('.judge-score-category-tab').addClass('disabled');
+    $('#btnSave').prop('disabled', true);
+    $.ajax({
+      url: 'candidates/save.php',
+      type: 'POST',
+      data: $('#myform').serialize()
+    }).done(function(response) {
+      if (response.toLowerCase().indexOf('success') !== -1) {
+        scoreFormDirty = false;
+        loadSelectedCategory();
+        return;
+      }
+
+      scoreCategoryBusy = false;
+      $('.judge-score-category-tab').removeClass('disabled');
+      $('#btnSave').prop('disabled', false);
+      $.notify(response, {
+        className: 'error',
+        globalPosition: 'top right',
+        autoHideDelay: 3000
+      });
+    }).fail(function() {
+      scoreCategoryBusy = false;
+      $('.judge-score-category-tab').removeClass('disabled');
+      $('#btnSave').prop('disabled', false);
+      $.notify('Could not save this category. Your scores are still available; please retry.', {
+        className: 'error',
+        globalPosition: 'top right',
+        autoHideDelay: 3000
+      });
+    });
+
+    return false;
   }
 
 </script>
