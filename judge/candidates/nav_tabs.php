@@ -1,6 +1,6 @@
 
 <!-- Nav tabs -->
-<ul class="nav nav-tabs nav-pills" role="tablist">
+<ul class="nav nav-tabs judge-category-tabs" role="tablist">
 
 <?php
   
@@ -80,8 +80,7 @@
 
   function openScore(cid, catid) {
 
-    $('#scoreform').removeClass('judge-content-entering').html(null);
-    $('#tot').html(null);
+    $('#scoreform').removeClass('judge-tab-in').addClass('judge-tab-switching');
 
     $('#scoreform').load('candidates/tab_content.php',{
 
@@ -94,9 +93,9 @@
 
         getTotal();
         scoreFormDirty = false;
-        $('#scoreform').removeClass('judge-content-entering');
+        $('#scoreform').removeClass('judge-tab-switching');
         void $('#scoreform')[0].offsetWidth;
-        $('#scoreform').addClass('judge-content-entering');
+        $('#scoreform').addClass('judge-tab-in');
         scoreCategoryBusy = false;
         $('.judge-score-category-tab').removeClass('disabled');
         $('#btnSave').prop('disabled', false);

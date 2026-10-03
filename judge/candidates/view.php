@@ -32,14 +32,19 @@
 
 <div class="judge-workspace">
   <aside class="judge-rail" aria-label="House and scoring filters">
-    <p class="judge-rail-title">Categories</p>
+    <p class="judge-rail-title">Houses</p>
     <div class="judge-filter-list judge-house-list" role="group" aria-label="Filter contestants">
       <button type="button" class="judge-filter judge-house-filter active" data-house-filter="all">
         <span>All houses</span><span class="judge-filter-count"><?php echo $houseTotal; ?></span>
       </button>
-      <?php foreach ($houseGroups as $houseGroup) { ?>
-        <button type="button" class="judge-filter judge-house-filter" data-house-filter="<?php echo htmlspecialchars(strtolower($houseGroup['cand_name']), ENT_QUOTES, 'UTF-8'); ?>">
-          <span><?php echo htmlspecialchars($houseGroup['cand_name'], ENT_QUOTES, 'UTF-8'); ?></span>
+      <?php foreach ($houseGroups as $houseGroup) { 
+        $houseSlug = strtolower(trim($houseGroup['cand_name']));
+      ?>
+        <button type="button" class="judge-filter judge-house-filter" data-house-filter="<?php echo htmlspecialchars($houseSlug, ENT_QUOTES, 'UTF-8'); ?>">
+          <span class="d-inline-flex align-items-center">
+            <span class="house-swatch swatch-<?php echo htmlspecialchars($houseSlug, ENT_QUOTES, 'UTF-8'); ?>"></span>
+            <?php echo htmlspecialchars($houseGroup['cand_name'], ENT_QUOTES, 'UTF-8'); ?>
+          </span>
           <span class="judge-filter-count"><?php echo (int) $houseGroup['house_count']; ?></span>
         </button>
       <?php } ?>
@@ -140,24 +145,33 @@
         $label = $type." of ".$candName;
       }
 
-?>
+      $houseSlug = strtolower(trim($candName));
+      $genderChar = strtoupper(substr(trim($candNo), -1));
+      $isFemale = ($genderChar === 'F');
+      $isMale = ($genderChar === 'M');
 
+?>
 
     <article class="judge-candidate <?php echo $updateOk == 1 ? 'is-scored' : 'is-pending'; ?>"
              data-score-state="<?php echo $updateOk == 1 ? 'scored' : 'pending'; ?>"
-         data-house="<?php echo $type == 'House' ? htmlspecialchars(strtolower($candName), ENT_QUOTES, 'UTF-8') : ''; ?>"
+             data-house="<?php echo htmlspecialchars($houseSlug, ENT_QUOTES, 'UTF-8'); ?>"
              data-search="<?php echo htmlspecialchars(strtolower($candName . ' ' . $candNo), ENT_QUOTES, 'UTF-8'); ?>">
       <div class="judge-candidate-photo">
         <img src="../uploads/<?php echo rawurlencode($candPic); ?>" class="myImg"
              alt="<?php echo htmlspecialchars($type . ' ' . $candNo . ' - ' . $candName, ENT_QUOTES, 'UTF-8'); ?>"
              loading="lazy">
         <span class="judge-candidate-number"><?php echo htmlspecialchars($type, ENT_QUOTES, 'UTF-8'); ?> #<?php echo htmlspecialchars($candNo, ENT_QUOTES, 'UTF-8'); ?></span>
-        <span class="judge-candidate-status"><?php echo $updateOk == 1 ? 'Scored' : 'To score'; ?></span>
+        <span class="judge-candidate-status"><?php echo $updateOk == 1 ? '<i class="fa fa-check" aria-hidden="true"></i> Scored' : 'To score'; ?></span>
       </div>
       <div class="judge-candidate-info">
-        <h2><?php echo htmlspecialchars($candName, ENT_QUOTES, 'UTF-8'); ?></h2>
-        <p><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></p>
-        <button type="button" class="judge-score-button" data-toggle="modal" data-target="#formModal"
+        <div class="mb-1 text-left">
+          <span class="house-pill house-pill-<?php echo htmlspecialchars($houseSlug, ENT_QUOTES, 'UTF-8'); ?>">
+            <span class="house-swatch swatch-<?php echo htmlspecialchars($houseSlug, ENT_QUOTES, 'UTF-8'); ?>"></span>
+            <?php echo htmlspecialchars($candName, ENT_QUOTES, 'UTF-8'); ?>
+          </span>
+        </div>
+        <h2><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></h2>
+        <button type="button" class="judge-score-button mt-auto" data-toggle="modal" data-target="#formModal"
                 data-cand-id="<?php echo htmlspecialchars($candId, ENT_QUOTES, 'UTF-8'); ?>"
                 data-cand-label="<?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?>">
           <i class="fa <?php echo $updateOk == 1 ? 'fa-pencil' : 'fa-star'; ?>" aria-hidden="true"></i>

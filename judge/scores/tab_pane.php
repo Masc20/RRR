@@ -56,20 +56,20 @@
         <table class="table table-bordered table-hover table-sm dataTable judge-score-table" width="100%" cellspacing="0">
 
         <!-- table header -->
-        <thead>
+        <thead class="thead-light">
           <tr>
             <?php
          
-              echo "<th>".$type." No</th>";
-              echo "<th>".$type." Name</th>";
+              echo "<th class='text-center'>".$type." No</th>";
+              echo "<th class='text-center'>".$type." / House</th>";
 
               while($row = $resultCriteria->fetch_assoc()) {
 
                 $criteriaName = $row['criteria_name'];
-                echo "<th>".$criteriaName."</th>";
+                echo "<th class='text-center'>".$criteriaName."</th>";
               }
 
-              echo "<th>Total</th>";
+              echo "<th class='text-center bg-light text-primary font-weight-bold'>Total</th>";
 
             ?>
           </tr>
@@ -95,10 +95,25 @@
                   $candNo = $row['cand_no'];
                   $candName = $row['cand_name'];
 
+                  $houseSlug = strtolower(trim($candName));
+                  $genderChar = strtoupper(substr(trim($candNo), -1));
+                  $isFemale = ($genderChar === 'F');
+                  $isMale = ($genderChar === 'M');
+
                   echo "<tr>";
 
-                  echo "<td align='center'>".$candNo."</td>";
-                  echo "<td align='center'>".$candName."</td>";
+                  echo "<td align='center' class='font-weight-bold'>".$candNo."</td>";
+                  echo "<td align='center'>";
+                  echo "<span class='house-pill house-pill-".$houseSlug."'>";
+                  echo "<span class='house-swatch swatch-".$houseSlug."'></span>";
+                  echo htmlspecialchars($candName, ENT_QUOTES, 'UTF-8');
+                  echo "</span>";
+                  if ($isFemale) {
+                    echo " <span class='division-pill division-pill-female ml-1'><i class='fa fa-female'></i> F</span>";
+                  } else if ($isMale) {
+                    echo " <span class='division-pill division-pill-male ml-1'><i class='fa fa-male'></i> M</span>";
+                  }
+                  echo "</td>";
 
                   $total = 0;
 
@@ -140,7 +155,7 @@
 
                   }
 
-                  echo "<td align='center'>".number_format($total, 0)."</td>";
+                  echo "<td align='center' class='font-weight-bold bg-light text-primary' style='font-size: 1.05rem;'>".number_format($total, 0)."</td>";
                   echo "</tr>";
                   
                 }

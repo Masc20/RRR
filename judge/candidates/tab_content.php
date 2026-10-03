@@ -35,14 +35,18 @@
         $descrp = $row['criteria_descrp'];
   ?>
 
-    <div class="form-group">
-      <strong>
-      <p style="margin-bottom: 5px;">
-        <?php echo $criteriaName; ?> 
-        <u class="text-danger">0-<?php echo $criteriaPoints; ?></u> pts
-        <?php if (!empty($descrp)) { echo "(".$descrp.")"; } ?>
-      </p>
-      </strong>
+    <div class="form-group mb-3 pb-2 border-bottom">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <label class="font-weight-bold text-dark mb-0">
+          <?php echo htmlspecialchars($criteriaName, ENT_QUOTES, 'UTF-8'); ?>
+          <?php if (!empty($descrp)) { ?>
+            <small class="text-muted font-weight-normal ml-1">(<?php echo htmlspecialchars($descrp, ENT_QUOTES, 'UTF-8'); ?>)</small>
+          <?php } ?>
+        </label>
+        <span class="badge badge-light border text-secondary font-weight-bold">
+          Range: 0 - <?php echo $criteriaPoints; ?> pts
+        </span>
+      </div>
 
       <?php
 
@@ -64,22 +68,41 @@
         
       ?>
 
-      <div class="row">
+      <div class="row align-items-center mb-1">
 
-        <div class="col-lg-11 col-md-10 col-sm-10 col-10">
-          <input class="items slider" type="range" title="Score" 
-              min="0" max="<?php echo $criteriaPoints; ?>" 
-              name="<?php echo $criteriaId; ?>" 
-              value = "<?php echo (!empty($score)) ? floatval($score) : 0; ?>" 
-              oninput="handleChange(this, <?php echo $criteriaPoints; ?>, <?php echo $criteriaId; ?>);" >
+        <div class="col-9 col-sm-10">
+          <div class="judge-ruler-slider-container">
+            <input class="items slider judge-ruler-slider" type="range" 
+                title="Score for <?php echo htmlspecialchars($criteriaName, ENT_QUOTES, 'UTF-8'); ?>" 
+                min="0" max="<?php echo $criteriaPoints; ?>" 
+                name="<?php echo $criteriaId; ?>" 
+                value="<?php echo (!empty($score)) ? floatval($score) : 0; ?>" 
+                aria-label="<?php echo htmlspecialchars($criteriaName, ENT_QUOTES, 'UTF-8'); ?>"
+                oninput="handleChange(this, <?php echo $criteriaPoints; ?>, <?php echo $criteriaId; ?>);" >
+
+            <div class="ruler-scale" aria-hidden="true">
+              <?php
+                $stepCount = 4;
+                for ($step = 0; $step <= $stepCount; $step++) {
+                  $pct = ($step / $stepCount) * 100;
+                  $val = round(($criteriaPoints / $stepCount) * $step);
+              ?>
+                <div class="ruler-milestone" style="left: <?php echo $pct; ?>%;">
+                  <span class="ruler-tick-major"></span>
+                  <span class="ruler-value"><?php echo $val; ?></span>
+                </div>
+              <?php } ?>
+            </div>
+          </div>
         </div>
 
-        <div class="col-lg-1 col-md-2 col-sm-2 col-2" style="margin-top: -7px;">
-          <h4>
-            <span id="labelPoints<?php echo $criteriaId; ?>" class="badge badge-pill badge-success">
+        <div class="col-3 col-sm-2 text-right">
+          <div class="judge-score-badge-wrapper">
+            <span id="labelPoints<?php echo $criteriaId; ?>" class="judge-score-display-badge">
               <?php echo (!empty($score)) ? floatval($score) : 0; ?>
             </span>
-          </h4>
+            <small class="d-block text-muted font-weight-bold mt-1" style="font-size: 9px; letter-spacing: 0.05em;">/ <?php echo $criteriaPoints; ?> PTS</small>
+          </div>
         </div>
 
       </div>
