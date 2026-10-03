@@ -63,6 +63,7 @@ $conn->close();
   <link href="../css/sb-admin.css" rel="stylesheet">
 
   <link rel="stylesheet" href="../animator/animate.css">
+  <link rel="stylesheet" href="../css/judge.css">
 
   <style>
     .slidecontainer {
@@ -194,10 +195,10 @@ $conn->close();
   
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top">
+<body class="fixed-nav sticky-footer judge-shell" id="page-top">
 
   <!-- Navigation-->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
+  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top" id="mainNav">
 
     <img src="../images/header_logo.png" style="width: 36px; height: 36px;"> 
     <a class="navbar-brand ml-2" href="javascript:void(0)"> 
@@ -213,14 +214,14 @@ $conn->close();
       <ul class="navbar-nav navbar-sidenav" id="exampleAccordion">
 
         <li class="nav-item active" data-toggle="tooltip" data-placement="right" title="Candidates">
-          <a class="nav-link" onclick="$('#content').load('candidates/candidates.php');">
+          <a class="nav-link" onclick="loadJudgePage('candidates/candidates.php');">
             <i class="fa fa-fw fa-group"></i>
             <span class="nav-link-text"><?php echo $type; ?>s</span>
           </a>
         </li>
         
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Results">
-          <a class="nav-link" onclick="$('#content').load('scores/scores.php');">
+          <a class="nav-link" onclick="loadJudgePage('scores/scores.php');">
             <i class="fa fa-fw fa-star"></i>
             <span class="nav-link-text">My Scores</span>
           </a>
@@ -302,7 +303,18 @@ $conn->close();
 
 
   <script>
-    $('#content').load('candidates/candidates.php');
+    function loadJudgePage(page) {
+      $('#content').load(page, function(data, status) {
+        if (status === 'success') {
+          var content = $('#content');
+          content.removeClass('judge-page-entering');
+          void content[0].offsetWidth;
+          content.addClass('judge-page-entering');
+        }
+      });
+    }
+
+    loadJudgePage('candidates/candidates.php');
 
     $(".navbar-sidenav a").on("click", function() {
       $(".navbar-sidenav").find(".active").removeClass("active");

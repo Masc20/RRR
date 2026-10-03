@@ -74,7 +74,7 @@
 
   function openScore(cid, catid) {
 
-    $('#scoreform').html(null);
+    $('#scoreform').removeClass('judge-content-entering').html(null);
     $('#tot').html(null);
 
     $('#scoreform').load('candidates/tab_content.php',{
@@ -87,6 +87,9 @@
       if (status == 'success') {
 
         getTotal();
+        $('#scoreform').removeClass('judge-content-entering');
+        void $('#scoreform')[0].offsetWidth;
+        $('#scoreform').addClass('judge-content-entering');
         
       } else {
 
