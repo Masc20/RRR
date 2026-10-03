@@ -115,8 +115,8 @@ body.judge-shell {
   gap: 20px;
   grid-template-columns: 228px minmax(0, 1fr);
   height: calc(100vh - 150px);
-  margin: 0 auto;
-  max-width: 1440px;
+  margin: 0 0.5rem;
+  max-width: none;
   min-height: 0;
 }
 
@@ -229,7 +229,7 @@ body.judge-shell {
   color: #337ab7;
 }
 
-.judge-page-entering,
+.judge-page-entering > :not(.modal),
 .judge-content-entering {
   animation: judge-navigation-arrive 180ms ease both;
 }
@@ -237,17 +237,15 @@ body.judge-shell {
 @keyframes judge-navigation-arrive {
   from {
     opacity: 0;
-    transform: translateY(5px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .judge-page-entering,
+  .judge-page-entering > :not(.modal),
   .judge-content-entering {
     animation: none;
   }
@@ -621,11 +619,36 @@ body.judge-shell {
   color: var(--judge-green);
 }
 
+.judge-modal .modal-footer .btn {
+  align-items: center;
+  border-radius: 4px;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 34px;
+  min-width: 76px;
+  padding: 7px 12px;
+  text-transform: uppercase;
+}
+
 .judge-modal #btnSave {
   background: var(--judge-green);
   border-color: var(--judge-green);
-  font-size: 11px;
-  font-weight: 800;
+  color: #fff;
+}
+
+.judge-modal .modal-footer .btn-secondary {
+  background: #fff;
+  border-color: #cbd5e1;
+  color: #46545d;
+}
+
+.judge-modal .modal-footer .btn-secondary:hover,
+.judge-modal .modal-footer .btn-secondary:focus {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: var(--judge-ink);
 }
 
 .judge-score-table {
