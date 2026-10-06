@@ -61,7 +61,7 @@
 	    mywindow.document.write('<center>');
 	    mywindow.document.write('<h1>');
 	    mywindow.document.write("<img src='../images/header_logo.png' style='width: 36px; height: 36px;'>");
-	    mywindow.document.write(' ACLC House Cup <?= $academicYear ?> - ACLC WEEK');
+	    mywindow.document.write(' ACLC House Cup <?= $academicYear ?> - INTRAMURALS');
 	    mywindow.document.write('</h1>');
 	    mywindow.document.write('</center>');
 
