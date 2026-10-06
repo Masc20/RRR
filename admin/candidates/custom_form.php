@@ -25,7 +25,7 @@
 
     <div class="form-group">
         <label><?php echo $row['based_type']; ?> No.</label>
-        <input class="form-control validate" type="text" name="candNo" 
+        <input class="form-control validate" type="number" name="candNo" 
               title = "<?php echo $row['based_type']; ?> no." min = "1" 
         		  placeholder="Enter <?php echo $row['based_type']; ?> no . . ." 
               onkeyup="handleChange(this);" onchange="handleChange(this);" >
@@ -39,6 +39,16 @@
             <option value="VIERRDY">VIERRDY</option>
             <option value="GIALLO">GIALLO</option>
             <option value="CAHEL">CAHEL</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Category</label>
+        <select class="form-control validate" name="candCategory" title="Category">
+            <option value="" disabled selected>Select Category . . .</option>
+            <option value="FEMALE">FEMALE</option>
+            <option value="MALE">MALE</option>
+            <option value="GROUP">GROUP</option>
         </select>
     </div>
 
