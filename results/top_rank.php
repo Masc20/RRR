@@ -42,14 +42,12 @@ $type = $row['based_type'];
                       ORDER BY category_id ASC";
               
               $resultCategory = $conn->query($sql);
+              $categoryList = [];
 
-              if ($resultCategory->num_rows > 0) {
-
+              if ($resultCategory && $resultCategory->num_rows > 0) {
                 while($row = $resultCategory->fetch_assoc()) {
-
+                  $categoryList[] = $row;
                   $categoryName = $row['category_name'];
-                  $percent = $row['percentage'];
-
                   echo "<th>".$categoryName."</th>";
                 }
                 echo "<th>Total</th>";
@@ -63,13 +61,13 @@ $type = $row['based_type'];
         <!-- Table body -->
         <tbody>
           <?php 
-              // Sum of all percentage
-          $selPer = "SELECT SUM(percentage) as totPer  FROM tbl_category 
-                    WHERE status = 'Show' ";
-                    $selPerVar = $conn->query($selPer);
-                    $newSelPar = $selPerVar->fetch_assoc();
- 
-           ?>
+            $totPer = 0;
+            foreach ($categoryList as $cat) {
+              if (strcasecmp(trim($cat['category_name']), 'total ranking') !== 0) {
+                $totPer += (float)$cat['percentage'];
+              }
+            }
+          ?>
           <?php
            
 
@@ -92,72 +90,58 @@ $type = $row['based_type'];
                 echo "<td align='center'>".$candNo."</td>";
                 echo "<td align='center'>".$candName."</td>";
 
-                $total = 0;
+                $regularScores = [];
+                $regularTotal = 0;
 
-                $sql = "SELECT * FROM tbl_category 
-                      WHERE status = 'Show' 
-                      ORDER BY category_id ASC";
+                foreach ($categoryList as $cat) {
+                  $catId = $cat['category_id'];
+                  $catName = $cat['category_name'];
+                  $percent = (float)$cat['percentage'];
 
-                $resultCategory = $conn->query($sql);
-
-                if ($resultCategory->num_rows > 0) {
-
-                  $overall = 0;
-
-                  while($row = $resultCategory->fetch_assoc()) {
-
-                    $total = 0;
-
-                    $categoryId = $row['category_id'];
-                    $percent = $row['percentage']; 
-
-                    $sql = "SELECT * FROM tbl_criteria 
-                            WHERE category_id = '$categoryId' 
-                            ORDER BY criteria_id ASC";
-
-                    $resultCriteria = $conn->query($sql);
-
-                    if ($resultCriteria->num_rows > 0) {
-
-                      while($row = $resultCriteria->fetch_assoc()) {
-
-                        $criteriaId = $row['criteria_id'];
-                    
-                        $sql = "SELECT CAST(AVG(s.score_points) AS DECIMAL(10,2)) AS 'score_points' 
-                                FROM tbl_scores AS s 
-                                WHERE s.cand_id = '$candId' AND s.criteria_id = '$criteriaId'   
-                                ORDER BY s.criteria_id ASC";
-
-                        $resultScore = $conn->query($sql);
-
-                        if ($resultScore->num_rows > 0) {
-
-                          $row = $resultScore->fetch_assoc();  
-
-                          $scorePoints = (is_null($row['score_points'])) ? 0 : $row['score_points'];
-
-                        }
-
-                        $total += $scorePoints;
-                      }
-
-                    }
-                    
-                    $total = ($percent / 100) * $total;
-                    echo "<td align='center'>".number_format($total, 2, '.', '')."</td>";
-                    // $total = ($newSelPar['totPer'] / 100) * $total;
-
-                    $overall += $total;
-                    $overall2 = $overall / $newSelPar['totPer'] * 100;
+                  if (strcasecmp(trim($catName), 'total ranking') === 0) {
+                    continue;
                   }
-                    ?>
-                    
-                        <td align="center"><?php echo number_format($overall2, 2); ?>%</td>
-                    <?php
 
+                  $categoryTotalScore = 0;
+                  $sqlCriteria = "SELECT criteria_id FROM tbl_criteria 
+                                  WHERE category_id = '$catId' 
+                                  ORDER BY criteria_id ASC";
+                  $resultCriteria = $conn->query($sqlCriteria);
+
+                  if ($resultCriteria && $resultCriteria->num_rows > 0) {
+                    while($rowCrit = $resultCriteria->fetch_assoc()) {
+                      $criteriaId = $rowCrit['criteria_id'];
+                      $sqlScore = "SELECT CAST(AVG(s.score_points) AS DECIMAL(10,2)) AS score_points 
+                                   FROM tbl_scores AS s 
+                                   WHERE s.cand_id = '$candId' AND s.criteria_id = '$criteriaId'";
+                      $resultScore = $conn->query($sqlScore);
+                      if ($resultScore && $resultScore->num_rows > 0) {
+                        $rowScore = $resultScore->fetch_assoc();
+                        $scorePoints = (is_null($rowScore['score_points'])) ? 0 : (float)$rowScore['score_points'];
+                        $categoryTotalScore += $scorePoints;
+                      }
+                    }
+                  }
+
+                  $factoredCategoryTotal = ($percent / 100) * $categoryTotalScore;
+                  $regularScores[$catId] = $factoredCategoryTotal;
+                  $regularTotal += $factoredCategoryTotal;
                 }
 
-                
+                foreach ($categoryList as $cat) {
+                  $catId = $cat['category_id'];
+                  $catName = $cat['category_name'];
+
+                  if (strcasecmp(trim($catName), 'total ranking') === 0) {
+                    echo "<td align='center'>".number_format($regularTotal, 2, '.', '')."</td>";
+                  } else {
+                    $score = $regularScores[$catId] ?? 0;
+                    echo "<td align='center'>".number_format($score, 2, '.', '')."</td>";
+                  }
+                }
+
+                $overall2 = ($totPer > 0) ? ($regularTotal / $totPer * 100) : 0;
+                echo "<td align='center'>".number_format($overall2, 2)."%</td>";
                 echo "</tr>";
                 
               }

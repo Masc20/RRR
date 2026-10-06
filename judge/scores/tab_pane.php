@@ -9,23 +9,27 @@
   $sql = "SELECT * FROM tbl_config";
 
   $resultConfig = $conn->query($sql);
-  $row = $resultConfig->fetch_assoc();
+  $configRow = $resultConfig->fetch_assoc();
+  $type = $configRow['based_type'];
 
-  $type = $row['based_type'];
+  $allRegularCategories = [];
+  $sqlAllCats = "SELECT category_id FROM tbl_category WHERE LOWER(TRIM(category_name)) != 'total ranking' ORDER BY category_id ASC";
+  $resAllCats = $conn->query($sqlAllCats);
+  if ($resAllCats && $resAllCats->num_rows > 0) {
+      while($cRow = $resAllCats->fetch_assoc()) {
+          $allRegularCategories[] = $cRow['category_id'];
+      }
+  }
 
-
-  $sql = "SELECT * FROM tbl_category 
-          ORDER BY category_id ASC";
-
+  $sql = "SELECT * FROM tbl_category ORDER BY category_id ASC";
   $resultCategory = $conn->query($sql);
 
   if ($resultCategory->num_rows > 0) {
+    while($catRow = $resultCategory->fetch_assoc()) {
+      $categoryId = $catRow['category_id'];
+      $categoryName = $catRow['category_name'];
 
-    while($row = $resultCategory->fetch_assoc()) {
-
-    $categoryId = $row['category_id'];
-    $categoryName = $row['category_name']
-
+      $isTotalRankingTab = (strcasecmp(trim($categoryName), 'total ranking') === 0);
 ?>
 
   <div id="menu<?php echo $categoryId;?>" class="container tab-pane fade judge-score-pane"><br>
@@ -42,15 +46,17 @@
         <div class="table-responsive" id="printableArea<?php echo $categoryId;?>">
 
         <?php
+          $criteriaList = [];
+          $sqlCriteria = "SELECT * FROM tbl_criteria WHERE category_id = '$categoryId' AND status = 'Show' ORDER BY criteria_id ASC";
+          $resultCriteria = $conn->query($sqlCriteria);
 
-          $sql = "SELECT * FROM tbl_criteria 
-                  WHERE category_id = '$categoryId' AND 
-                        status = 'Show'
-                  ORDER BY criteria_id ASC";
-          $resultCriteria = $conn->query($sql);
-
-          if ($resultCriteria->num_rows > 0) {
-
+          if ($resultCriteria && $resultCriteria->num_rows > 0) {
+              while($critRow = $resultCriteria->fetch_assoc()) {
+                  $criteriaList[] = $critRow;
+              }
+          }
+          
+          if (!empty($criteriaList)) { 
         ?>
 
         <table class="table table-bordered table-hover table-sm dataTable judge-score-table" width="100%" cellspacing="0">
@@ -63,11 +69,9 @@
               echo "<th class='text-center'>".$type." No</th>";
               echo "<th class='text-center'>".$type." / House</th>";
 
-              while($row = $resultCriteria->fetch_assoc()) {
-
-                $criteriaName = $row['criteria_name'];
-                echo "<th class='text-center'>".$criteriaName."</th>";
-              }
+              foreach($criteriaList as $crit) { 
+                  echo "<th class='text-center'>".htmlspecialchars($crit['criteria_name'], ENT_QUOTES, 'UTF-8')."</th>"; 
+              } 
 
               echo "<th class='text-center bg-light text-primary font-weight-bold'>Total</th>";
 
@@ -80,20 +84,14 @@
         <tbody>
           
             <?php
-
-              $sql = "SELECT * FROM tbl_candidates 
-                      WHERE status = 'Allow'
-                      ORDER BY cand_no ASC";
-
-              $resultCand = $conn->query($sql);
+              $sqlCand = "SELECT * FROM tbl_candidates WHERE status = 'Allow' ORDER BY cand_no ASC";
+              $resultCand = $conn->query($sqlCand);
 
               if ($resultCand->num_rows > 0) {
-
-                while($row = $resultCand->fetch_assoc()) {
-
-                  $candId = $row['cand_id'];
-                  $candNo = $row['cand_no'];
-                  $candName = $row['cand_name'];
+                while($candRow = $resultCand->fetch_assoc()) {
+                  $candId = $candRow['cand_id'];
+                  $candNo = $candRow['cand_no'];
+                  $candName = $candRow['cand_name'];
 
                   $houseSlug = strtolower(trim($candName));
                   $genderChar = strtoupper(substr(trim($candNo), -1));
@@ -115,47 +113,47 @@
                   }
                   echo "</td>";
 
-                  $total = 0;
+                  $grandTotal = 0;
 
-                  $sql = "SELECT * FROM tbl_criteria 
-                          WHERE category_id = '$categoryId' AND 
-                                status = 'Show'
-                          ORDER BY criteria_id ASC";
-
-                  $resultCriteria = $conn->query($sql);
-
-                  if ($resultCriteria->num_rows > 0) {
-
-                    while($row = $resultCriteria->fetch_assoc()) {
-
-                      $criteriaId = $row['criteria_id'];
+                  foreach($criteriaList as $index => $crit) {
+                      $criteriaId = $crit['criteria_id'];
                       
-                      $sql = "SELECT s.score_points 
-                              FROM tbl_scores AS s 
-                              WHERE s.user_id = '$judgeId' AND s.cand_id = '$candId' AND s.criteria_id = '$criteriaId'   
-                              ORDER BY s.criteria_id ASC";
-
-                      $resultScore = $conn->query($sql);
-
-                      if ($resultScore->num_rows > 0) {
-
-                        $row = $resultScore->fetch_assoc();  
-
-                        $scorePoints = $row['score_points']; 
-                        
+                      if ($isTotalRankingTab) {
+                          $sourceCategoryId = isset($allRegularCategories[$index]) ? $allRegularCategories[$index] : 0;
+                          
+                          $sqlSubTotal = "SELECT SUM(score_points) as cat_total 
+                                          FROM tbl_scores 
+                                          WHERE user_id = '$judgeId' 
+                                            AND cand_id = '$candId' 
+                                            AND category_id = '$sourceCategoryId'";
+                                          
+                          $resultSubTotal = $conn->query($sqlSubTotal);
+                          $scorePoints = 0;
+                          
+                          if ($resultSubTotal && $subTotalRow = $resultSubTotal->fetch_assoc()) {
+                              $scorePoints = $subTotalRow['cat_total'] ?? 0;
+                          }
                       } else {
+                          $sqlScore = "SELECT score_points FROM tbl_scores 
+                                       WHERE user_id = '$judgeId' 
+                                         AND cand_id = '$candId' 
+                                         AND criteria_id = '$criteriaId' 
+                                       LIMIT 1";
 
-                        $scorePoints = 0;
+                          $resultScore = $conn->query($sqlScore);
+                          $scorePoints = 0;
+
+                          if ($resultScore && $resultScore->num_rows > 0) {
+                            $scoreRow = $resultScore->fetch_assoc();  
+                            $scorePoints = $scoreRow['score_points']; 
+                          }
                       }
                       
                       echo "<td align='center'>".number_format($scorePoints, 0)."</td>";
-
-                      $total += $scorePoints;
-                    }
-
+                      $grandTotal += $scorePoints;
                   }
 
-                  echo "<td align='center' class='font-weight-bold bg-light text-primary' style='font-size: 1.05rem;'>".number_format($total, 0)."</td>";
+                  echo "<td align='center' class='font-weight-bold bg-light text-primary' style='font-size: 1.05rem;'>".number_format($grandTotal, 0)."</td>";
                   echo "</tr>";
                   
                 }

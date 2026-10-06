@@ -61,7 +61,7 @@ if ($result->num_rows > 0) {
                           name="<?php echo $candId; ?>" value="Allow" 
                           onclick="updateStatus('candidates', this);">
                     Allow
-                  </button>
+                  </button
                   <button type="button" class="btn btn-danger" disabled>
                     Eliminated <i class='fa fa-fw fa-check'></i>
                   </button>

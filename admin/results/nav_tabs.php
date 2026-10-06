@@ -34,7 +34,7 @@
 
 ?>
 
-<li class="nav-item">
+  <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#menuTop">
     Overall Average
     </a>
@@ -44,7 +44,10 @@
       Overall Result
     </a>
   </li>
-
-
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#menuTopRanking">
+      Top Ranking
+    </a>
+  </li>
 
 </ul>
