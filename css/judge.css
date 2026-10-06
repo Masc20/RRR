@@ -16,15 +16,15 @@
   --house-roxxo-text: #991b1b;
   --house-roxxo-border: #fca5a5;
 
-  --house-giallio: #f1f504;
-  --house-giallio-bg: #fcffeb;
-  --house-giallio-text: #92830e;
-  --house-giallio-border: #f0f046;
+  --house-giallo: #f1f504;
+  --house-giallo-bg: #fcffeb;
+  --house-giallo-text: #92830e;
+  --house-giallo-border: #f0f046;
 
-  --house-vierddy: #16a34a;
-  --house-vierddy-bg: #f0fdf4;
-  --house-vierddy-text: #166534;
-  --house-vierddy-border: #86efac;
+  --house-vierrdy: #16a34a;
+  --house-vierrdy-bg: #f0fdf4;
+  --house-vierrdy-text: #166534;
+  --house-vierrdy-border: #86efac;
 
   --house-azul: #2563eb;
   --house-azul-bg: #eff6ff;
@@ -245,8 +245,8 @@ body.judge-shell {
 }
 
 .swatch-roxxo { background: var(--house-roxxo); }
-.swatch-giallio { background: var(--house-giallio); }
-.swatch-vierddy { background: var(--house-vierddy); }
+.swatch-giallo { background: var(--house-giallo); }
+.swatch-vierrdy { background: var(--house-vierrdy); }
 .swatch-azul { background: var(--house-azul); }
 .swatch-cahel { background: var(--house-cahel); }
 
@@ -270,24 +270,24 @@ body.judge-shell {
   color: var(--house-roxxo);
 }
 
-.judge-house-filter[data-house-filter="giallio"].active {
-  background: var(--house-giallio) !important;
+.judge-house-filter[data-house-filter="giallo"].active {
+  background: var(--house-giallo) !important;
   color: #000000 !important;
 }
 
-.judge-house-filter[data-house-filter="giallio"].active .judge-filter-count {
+.judge-house-filter[data-house-filter="giallo"].active .judge-filter-count {
   background: #fff;
-  color: var(--house-giallio);
+  color: var(--house-giallo);
 }
 
-.judge-house-filter[data-house-filter="vierddy"].active {
-  background: var(--house-vierddy) !important;
+.judge-house-filter[data-house-filter="vierrdy"].active {
+  background: var(--house-vierrdy) !important;
   color: #fff !important;
 }
 
-.judge-house-filter[data-house-filter="vierddy"].active .judge-filter-count {
+.judge-house-filter[data-house-filter="vierrdy"].active .judge-filter-count {
   background: #fff;
-  color: var(--house-vierddy);
+  color: var(--house-vierrdy);
 }
 
 .judge-house-filter[data-house-filter="azul"].active {
@@ -563,16 +563,16 @@ body.judge-shell {
   color: var(--house-roxxo-text);
 }
 
-.house-pill-giallio {
-  background: var(--house-giallio-bg);
-  border: 1px solid var(--house-giallio-border);
-  color: var(--house-giallio-text);
+.house-pill-giallo {
+  background: var(--house-giallo-bg);
+  border: 1px solid var(--house-giallo-border);
+  color: var(--house-giallo-text);
 }
 
-.house-pill-vierddy {
-  background: var(--house-vierddy-bg);
-  border: 1px solid var(--house-vierddy-border);
-  color: var(--house-vierddy-text);
+.house-pill-vierrdy {
+  background: var(--house-vierrdy-bg);
+  border: 1px solid var(--house-vierrdy-border);
+  color: var(--house-vierrdy-text);
 }
 
 .house-pill-azul {

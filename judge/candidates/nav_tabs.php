@@ -7,7 +7,7 @@
   include '../../connection/conn.php';
 
   $sql = "SELECT * FROM tbl_category AS c
-          WHERE c.status = 'Show' 
+          WHERE c.status = 'Show' AND LOWER(TRIM(c.category_name)) != 'total ranking'
           ORDER BY category_id ASC";
   $resultCategory = $conn->query($sql);
 

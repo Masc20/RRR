@@ -1,8 +1,6 @@
 <?php
-
 include '../config/config.php'; 
-$type = $row['based_type'];
-
+$type = $configRow['based_type'] ?? $row['based_type']; // Safely handles configurations from your row array
 ?>
 
 <!-- Overall result tab pane -->
@@ -13,8 +11,8 @@ $type = $row['based_type'];
     <div class="card-header">
       <i class="fa fa-table"></i> Overall Result
 
-      <button class="pull-right btn btn-success" 
-          onclick="PrintElem('printableArea', 'Overall Result');">
+      <!-- Updated to call PrintElem function instead of window.print() -->
+      <button class="pull-right btn btn-success" onclick="PrintElem('printableArea', 'Overall Result');">
         <i class="fa fa-print"></i> Print
       </button>
 
@@ -37,22 +35,20 @@ $type = $row['based_type'];
 
               include '../../connection/conn.php';
 
-              $sql = "SELECT * FROM tbl_category 
-                      WHERE status = 'Show' 
-                      ORDER BY category_id ASC";
+              $sqlCategoryHeader = "SELECT * FROM tbl_category 
+                                    WHERE status = 'Show' 
+                                    ORDER BY category_id ASC";
               
-              $resultCategory = $conn->query($sql);
+              $resultCategoryHeader = $conn->query($sqlCategoryHeader);
+              $categoryList = [];
 
-              if ($resultCategory->num_rows > 0) {
-
-                while($row = $resultCategory->fetch_assoc()) {
-
-                  $categoryName = $row['category_name'];
-                  $percent = $row['percentage'];
-
+              if ($resultCategoryHeader && $resultCategoryHeader->num_rows > 0) {
+                while($rowCatHeader = $resultCategoryHeader->fetch_assoc()) {
+                  $categoryList[] = $rowCatHeader;
+                  $categoryName = $rowCatHeader['category_name'];
                   echo "<th>".$categoryName."</th>";
                 }
-                echo "<th>Total</th>";
+                echo "<th class='bg-light text-primary font-weight-bold'>Grand Total</th>";
               }  
             ?>
           
@@ -65,89 +61,79 @@ $type = $row['based_type'];
           
           <?php
 
-            $sql = "SELECT * FROM tbl_candidates 
-                    WHERE status = 'Allow' 
-                    ORDER BY cand_no ASC";
+            $sqlCand = "SELECT * FROM tbl_candidates 
+                        WHERE status = 'Allow' 
+                        ORDER BY cand_no ASC";
 
-            $resultCand = $conn->query($sql);
+            $resultCand = $conn->query($sqlCand);
 
             if ($resultCand->num_rows > 0) {
 
-              while($row = $resultCand->fetch_assoc()) {
+              while($rowCand = $resultCand->fetch_assoc()) {
 
-                $candId = $row['cand_id']; 
-                $candNo = $row['cand_no'];
-                $candName = $row['cand_name'];
+                $candId = $rowCand['cand_id']; 
+                $candNo = $rowCand['cand_no'];
+                $candName = $rowCand['cand_name'];
 
                 echo "<tr>";
-                
                 echo "<td align='center'>".$candNo."</td>";
-                echo "<td align='center'>".$candName."</td>";
+                echo "<td align='center'>".htmlspecialchars($candName, ENT_QUOTES, 'UTF-8')."</td>";
 
-                $total = 0;
+                $regularScores = [];
+                $regularTotal = 0;
 
-                $sql = "SELECT * FROM tbl_category 
-                      WHERE status = 'Show' 
-                      ORDER BY category_id ASC";
+                foreach ($categoryList as $cat) {
+                  $catId = $cat['category_id'];
+                  $catName = $cat['category_name'];
+                  $percent = (float)$cat['percentage'];
 
-                $resultCategory = $conn->query($sql);
-
-                if ($resultCategory->num_rows > 0) {
-
-                  $overall = 0;
-
-                  while($row = $resultCategory->fetch_assoc()) {
-
-                    $total = 0;
-
-                    $categoryId = $row['category_id'];
-                    $percent = $row['percentage']; 
-
-                    $sql = "SELECT * FROM tbl_criteria 
-                            WHERE category_id = '$categoryId' 
-                            ORDER BY criteria_id ASC";
-
-                    $resultCriteria = $conn->query($sql);
-
-                    if ($resultCriteria->num_rows > 0) {
-
-                      while($row = $resultCriteria->fetch_assoc()) {
-
-                        $criteriaId = $row['criteria_id'];
-                    
-                        $sql = "SELECT CAST(AVG(s.score_points) AS DECIMAL(10,2)) AS 'score_points' 
-                                FROM tbl_scores AS s 
-                                WHERE s.cand_id = '$candId' AND s.criteria_id = '$criteriaId'   
-                                ORDER BY s.criteria_id ASC";
-
-                        $resultScore = $conn->query($sql);
-
-                        if ($resultScore->num_rows > 0) {
-
-                          $row = $resultScore->fetch_assoc();  
-
-                          $scorePoints = (is_null($row['score_points'])) ? 0 : $row['score_points'];
-
-                        }
-
-                        $total += $scorePoints;
-                      }
-
-                    }
-                      
-                    $total = ($percent / 100) * $total;
-                    echo "<td align='center'>".number_format($total, 2, '.', '')."</td>";
-                    $overall += $total;
+                  if (strcasecmp(trim($catName), 'total ranking') === 0) {
+                    continue;
                   }
 
-                  echo "<td align='center'>".number_format($overall, 2, '.', '')."</td>";
+                  $categoryTotalScore = 0;
+                  $sqlCriteria = "SELECT criteria_id FROM tbl_criteria 
+                                  WHERE category_id = '$catId' 
+                                  ORDER BY criteria_id ASC";
+                  $resultCriteria = $conn->query($sqlCriteria);
+
+                  if ($resultCriteria && $resultCriteria->num_rows > 0) {
+                    while($rowCrit = $resultCriteria->fetch_assoc()) {
+                      $criteriaId = $rowCrit['criteria_id'];
+                      $sqlScore = "SELECT CAST(AVG(s.score_points) AS DECIMAL(10,2)) AS score_points 
+                                   FROM tbl_scores AS s 
+                                   WHERE s.cand_id = '$candId' AND s.criteria_id = '$criteriaId'";
+                      $resultScore = $conn->query($sqlScore);
+                      if ($resultScore && $resultScore->num_rows > 0) {
+                        $rowScore = $resultScore->fetch_assoc();
+                        $scorePoints = (is_null($rowScore['score_points'])) ? 0 : (float)$rowScore['score_points'];
+                        $categoryTotalScore += $scorePoints;
+                    }
+                  }
                 }
 
-                
-                echo "</tr>";
-                
+                $factoredCategoryTotal = ($percent / 100) * $categoryTotalScore;
+                $regularScores[$catId] = $factoredCategoryTotal;
+                $regularTotal += $factoredCategoryTotal;
+              }
+
+              foreach ($categoryList as $cat) {
+                $catId = $cat['category_id'];
+                $catName = $cat['category_name'];
+
+                if (strcasecmp(trim($catName), 'total ranking') === 0) {
+                  echo "<td align='center'>".number_format($regularTotal, 2, '.', '')."</td>";
+                } else {
+                  $score = $regularScores[$catId] ?? 0;
+                  echo "<td align='center'>".number_format($score, 2, '.', '')."</td>";
               }
             }
+
+              echo "<td align='center' class='font-weight-bold bg-light text-primary'>".number_format($regularTotal, 2, '.', '')."</td>";
+              echo "</tr>";
+              
+            }
+          }
 
           ?>
         </tbody>
@@ -157,13 +143,14 @@ $type = $row['based_type'];
         <!-- Signature -->
         <?php
 
-          $sql = "SELECT DISTINCT u.* FROM tbl_users AS u, tbl_scores AS s 
-                  WHERE u.user_id = s.user_id AND u.status = 'Active' 
-                  ORDER BY u.user_id ASC";
+          $sqlJudges = "SELECT DISTINCT u.* FROM tbl_users AS u
+                        INNER JOIN tbl_scores AS s ON u.user_id = s.user_id 
+                        WHERE u.status = 'Active' 
+                        ORDER BY u.user_id ASC";
 
-          $resultJudges = $conn->query($sql);
+          $resultJudges = $conn->query($sqlJudges);
 
-          if ($resultJudges->num_rows > 0) {
+          if ($resultJudges && $resultJudges->num_rows > 0) {
 
         ?>
 
@@ -174,42 +161,37 @@ $type = $row['based_type'];
             <tr>
 
               <?php
-
-                while($row = $resultJudges->fetch_assoc()) {
-
-                  $judgeName = $row['full_name'];
-                  $judgeType = $row['user_type'];
+                while($rowJudge = $resultJudges->fetch_assoc()) {
+                  $judgeName = $rowJudge['full_name'];
+                  $judgeType = $rowJudge['user_type'];
               ?>
 
                 <td style='border: none;'>
                   <center>
-                    <u><?php echo $judgeName; ?></u>
+                    <u><?php echo htmlspecialchars($judgeName, ENT_QUOTES, 'UTF-8'); ?></u>
                     <br>
                     <strong><?php echo $judgeType; ?></strong>
                   </center>
                 </td>
 
               <?php
+              }
+            ?>
 
-                }
-              ?>
-
-            </tr>
-          </table>
+          </tr>
+        </table>
 
         <?php
-
           }
 
           $conn->close();
         ?>
         <!-- /signature -->
 
-
       </div>
       <!-- table responsive -->
     </div>
-    <!-- card bady -->
+    <!-- card body -->
 
     <div class="card-footer small text-muted"></div>
   </div>

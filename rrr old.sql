@@ -28,11 +28,9 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `online_judges` (
-  `session_id` int(11) NOT NULL AUTO_INCREMENT,
+  `session_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `time` int(20) NOT NULL,
-  PRIMARY KEY (`session_id`),
-  KEY `user_id` (`user_id`)
+  `time` int(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
@@ -42,12 +40,11 @@ CREATE TABLE `online_judges` (
 --
 
 CREATE TABLE `tbl_candidates` (
-  `cand_id` int(11) NOT NULL AUTO_INCREMENT,
+  `cand_id` int(11) NOT NULL,
   `cand_no` varchar(11) NOT NULL DEFAULT '0',
   `cand_name` varchar(50) NOT NULL,
   `cand_pic` varchar(200) NOT NULL DEFAULT 'default-user.png',
-  `status` enum('Allow','Eliminate') NOT NULL DEFAULT 'Allow',
-  PRIMARY KEY (`cand_id`)
+  `status` enum('Allow','Eliminate') NOT NULL DEFAULT 'Allow'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
@@ -83,11 +80,10 @@ INSERT INTO `tbl_candidates` (`cand_id`, `cand_no`, `cand_name`, `cand_pic`, `st
 --
 
 CREATE TABLE `tbl_category` (
-  `category_id` int(11) NOT NULL AUTO_INCREMENT,
+  `category_id` int(11) NOT NULL,
   `category_name` varchar(50) NOT NULL,
   `percentage` int(11) NOT NULL DEFAULT 0,
-  `status` enum('Show','Hide') NOT NULL DEFAULT 'Show',
-  PRIMARY KEY (`category_id`)
+  `status` enum('Show','Hide') NOT NULL DEFAULT 'Show'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
@@ -98,7 +94,7 @@ INSERT INTO `tbl_category` (`category_id`, `category_name`, `percentage`, `statu
 (1, 'HOUSE ATTIRE', 100, 'Show'),
 (2, 'SCHOOL UNIFORM ATTIRE', 100, 'Show'),
 (3, 'GODS AND GODDESS ATTIRE', 100, 'Show'),
-(4, 'TOTAL RANKING', 300, 'Show');
+(5, 'Total Ranking', 300, 'Show');
 
 -- --------------------------------------------------------
 
@@ -107,13 +103,12 @@ INSERT INTO `tbl_category` (`category_id`, `category_name`, `percentage`, `statu
 --
 
 CREATE TABLE `tbl_config` (
-  `config_id` int(11) NOT NULL AUTO_INCREMENT,
+  `config_id` int(11) NOT NULL,
   `event_title` varchar(50) NOT NULL,
   `based_type` enum('Candidate','House') NOT NULL DEFAULT 'House',
   `prompt_msg` varchar(200) NOT NULL,
   `chairman_status` enum('Open','Close') NOT NULL DEFAULT 'Open',
-  `judge_status` enum('Open','Close') NOT NULL DEFAULT 'Open',
-  PRIMARY KEY (`config_id`)
+  `judge_status` enum('Open','Close') NOT NULL DEFAULT 'Open'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
@@ -130,14 +125,12 @@ INSERT INTO `tbl_config` (`config_id`, `event_title`, `based_type`, `prompt_msg`
 --
 
 CREATE TABLE `tbl_criteria` (
-  `criteria_id` int(11) NOT NULL AUTO_INCREMENT,
+  `criteria_id` int(11) NOT NULL,
   `criteria_name` varchar(50) NOT NULL,
   `criteria_points` int(11) NOT NULL DEFAULT 0,
   `criteria_descrp` varchar(50) NOT NULL,
   `category_id` int(11) NOT NULL,
-  `status` enum('Show','Hide') NOT NULL DEFAULT 'Show',
-  PRIMARY KEY (`criteria_id`),
-  KEY `category_id` (`category_id`)
+  `status` enum('Show','Hide') NOT NULL DEFAULT 'Show'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
@@ -157,9 +150,9 @@ INSERT INTO `tbl_criteria` (`criteria_id`, `criteria_name`, `criteria_points`, `
 (10, 'Theme Suitability', 20, '', 3, 'Show'),
 (11, 'Bearing (Confidence and Poise)', 40, '', 3, 'Show'),
 (12, 'Audience Impact', 10, '', 3, 'Show'),
-(13, 'House Attire Total', 100, 'Total Score for House Attire Category', 4, 'Show'),
-(14, 'School Uniform Total', 100, 'Total Score for School Uniform Category', 4, 'Show'),
-(15, 'G & G Total', 100, 'Total Score for God and Goddess Attire', 4, 'Show');
+(16, 'House Attire Total', 100, 'Total Score for House Attire Category', 5, 'Show'),
+(17, 'School Uniform Total', 100, 'Total Score for School Uniform Category', 5, 'Show'),
+(18, 'G & G Total', 100, 'Total Score for God and Goddess Attire', 5, 'Show');
 
 -- --------------------------------------------------------
 
@@ -168,18 +161,13 @@ INSERT INTO `tbl_criteria` (`criteria_id`, `criteria_name`, `criteria_points`, `
 --
 
 CREATE TABLE `tbl_scores` (
-  `score_id` int(11) NOT NULL AUTO_INCREMENT,
+  `score_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL,
   `criteria_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `cand_id` int(11) NOT NULL,
   `score_points` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `date_saved` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`score_id`),
-  KEY `criteria_id` (`criteria_id`),
-  KEY `user_id` (`user_id`),
-  KEY `cand_id` (`cand_id`),
-  KEY `category_id` (`category_id`)
+  `date_saved` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
@@ -189,14 +177,12 @@ CREATE TABLE `tbl_scores` (
 --
 
 CREATE TABLE `tbl_users` (
-  `user_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
   `full_name` varchar(50) NOT NULL,
   `user_name` varchar(50) NOT NULL,
   `pass_word` varchar(50) NOT NULL,
   `user_type` enum('Admin','Chairman','Judge') NOT NULL DEFAULT 'Judge',
-  `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `user_name` (`user_name`)
+  `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
@@ -210,6 +196,99 @@ INSERT INTO `tbl_users` (`user_id`, `full_name`, `user_name`, `pass_word`, `user
 (4, 'Judge # 3', 'judge3', 'judge3', 'Judge', 'Active'),
 (5, 'Judge # 4', 'judge4', 'judge4', 'Judge', 'Active'),
 (6, 'Committee', 'comm', 'c0mm', 'Chairman', 'Active');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `online_judges`
+--
+ALTER TABLE `online_judges`
+  ADD PRIMARY KEY (`session_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `tbl_candidates`
+--
+ALTER TABLE `tbl_candidates`
+  ADD PRIMARY KEY (`cand_id`);
+
+--
+-- Indexes for table `tbl_category`
+--
+ALTER TABLE `tbl_category`
+  ADD PRIMARY KEY (`category_id`);
+
+--
+-- Indexes for table `tbl_config`
+--
+ALTER TABLE `tbl_config`
+  ADD PRIMARY KEY (`config_id`);
+
+--
+-- Indexes for table `tbl_criteria`
+--
+ALTER TABLE `tbl_criteria`
+  ADD PRIMARY KEY (`criteria_id`),
+  ADD KEY `category_id` (`category_id`);
+
+--
+-- Indexes for table `tbl_scores`
+--
+ALTER TABLE `tbl_scores`
+  ADD PRIMARY KEY (`score_id`),
+  ADD KEY `criteria_id` (`criteria_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `cand_id` (`cand_id`),
+  ADD KEY `category_id` (`category_id`);
+
+--
+-- Indexes for table `tbl_users`
+--
+ALTER TABLE `tbl_users`
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `user_name` (`user_name`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `online_judges`
+--
+ALTER TABLE `online_judges`
+  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `tbl_candidates`
+--
+ALTER TABLE `tbl_candidates`
+  MODIFY `cand_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT for table `tbl_category`
+--
+ALTER TABLE `tbl_category`
+  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `tbl_criteria`
+--
+ALTER TABLE `tbl_criteria`
+  MODIFY `criteria_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
+-- AUTO_INCREMENT for table `tbl_scores`
+--
+ALTER TABLE `tbl_scores`
+  MODIFY `score_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT for table `tbl_users`
+--
+ALTER TABLE `tbl_users`
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables

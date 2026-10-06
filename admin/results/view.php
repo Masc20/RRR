@@ -7,6 +7,7 @@
 <?php include '../results/tab_pane.php'; ?>
 <?php include '../results/overall.php'; ?>
 <?php include '../results/top_rank.php'; ?>
+<?php include '../results/top_ranking.php'; ?>
 
 </div>
 

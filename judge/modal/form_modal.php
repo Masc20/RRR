@@ -33,3 +33,40 @@
       </div>
   </div>
 </div>
+
+<style>
+  /* Lock modal to screen viewport and enable clean inner scrolling */
+  .judge-modal .modal-dialog {
+    max-width: 700px !important;
+    margin: 1.5rem auto !important;
+  }
+
+  .judge-modal .modal-content {
+    max-height: calc(100vh - 80px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .judge-modal .modal-header,
+  .judge-modal .modal-footer {
+    flex-shrink: 0 !important;
+  }
+
+  /* Make category tabs sticky at the top inside the modal body */
+  .judge-modal .modal-body {
+    overflow-y: auto !important;
+    max-height: calc(100vh - 220px) !important;
+    padding: 1rem !important;
+  }
+
+  /* Lock the nav-tabs to the top of the scrolling body so you don't have to scroll up */
+  .judge-modal .modal-body .nav-tabs {
+    position: sticky !important;
+    top: -1rem !important;
+    background: #ffffff !important;
+    z-index: 1050 !important;
+    padding-top: 0.25rem !important;
+    margin-bottom: 1rem !important;
+    border-bottom: 2px solid #dee2e6 !important;
+  }
+</style>

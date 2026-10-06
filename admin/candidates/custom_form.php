@@ -15,7 +15,7 @@
             <input id = "files" name="fileToUpload" type="file" accept="image/*" style="display: none" 
                   onchange="preview_pic(this);">
           </div>
-      	</center>			              	
+      	</center>
   	</div>
 
   </div>
@@ -25,11 +25,10 @@
 
     <div class="form-group">
         <label><?php echo $row['based_type']; ?> No.</label>
-        <input class="form-control validate" type="number" name="candNo" 
+        <input class="form-control validate" type="text" name="candNo" 
               title = "<?php echo $row['based_type']; ?> no." min = "1" 
         		  placeholder="Enter <?php echo $row['based_type']; ?> no . . ." 
-              onkeyup="handleChange(this);" onchange="handleChange(this);" 
-              onkeypress="return isNumberKey(event);">
+              onkeyup="handleChange(this);" onchange="handleChange(this);" >
     </div>
     <div class="form-group">
     	<label><?php echo $row['based_type']; ?> Name</label>

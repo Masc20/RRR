@@ -100,6 +100,7 @@
 
     $sql = "SELECT c.* FROM tbl_category AS c, tbl_criteria AS p 
             WHERE c.status = 'Show' AND 
+                  LOWER(TRIM(c.category_name)) != 'total ranking' AND 
                   c.category_id = p.category_id 
             ORDER BY c.category_id ASC";
     $resultCategory = $conn->query($sql);
@@ -120,6 +121,7 @@
               WHERE s.user_id = '$judgeId' AND 
                     s.cand_id = '$candId' AND 
                     s.category_id = c.category_id AND 
+                    LOWER(TRIM(c.category_name)) != 'total ranking' AND 
                     c.status = 'Show'";
       $resultScore = $conn->query($sql);
 
