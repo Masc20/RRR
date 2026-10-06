@@ -31,9 +31,15 @@
               onkeyup="handleChange(this);" onchange="handleChange(this);" >
     </div>
     <div class="form-group">
-    	<label><?php echo $row['based_type']; ?> Name</label>
-        <input class="form-control validate" type="text" name="candName" title = "<?php echo $row['based_type']; ?> name"
-        		placeholder="Enter <?php echo $row['based_type']; ?> name . . ." maxlength="50">
+        <label><?php echo $row['based_type']; ?> Name</label>
+        <select class="form-control validate" name="candName" title="<?php echo $row['based_type']; ?> name">
+            <option value="" disabled selected>Select <?php echo $row['based_type']; ?> name . . .</option>
+            <option value="AZUL">AZUL</option>
+            <option value="ROXXO">ROXXO</option>
+            <option value="VIERRDY">VIERRDY</option>
+            <option value="GIALLO">GIALLO</option>
+            <option value="CAHEL">CAHEL</option>
+        </select>
     </div>
 
   </div>
