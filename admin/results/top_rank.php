@@ -3,6 +3,15 @@
 include '../config/config.php'; 
 $type = $row['based_type'];
 
+include '../../connection/conn.php';
+$hasAnyCategoryAssigned = false;
+$checkCatSql = "SELECT COUNT(*) as cnt FROM tbl_candidates WHERE status = 'Allow' AND cand_category IS NOT NULL AND TRIM(cand_category) != '' AND UPPER(TRIM(cand_category)) != 'NONE'";
+$checkCatRes = $conn->query($checkCatSql);
+if ($checkCatRes && $checkCatRow = $checkCatRes->fetch_assoc()) {
+    if ($checkCatRow['cnt'] > 0) {
+        $hasAnyCategoryAssigned = true;
+    }
+}
 ?>
 
 <!-- Overall result tab pane -->
@@ -32,11 +41,9 @@ $type = $row['based_type'];
 
             <th><?php echo $type; ?> No</th>
             <th><?php echo $type; ?> Name</th>
+            <?php if ($hasAnyCategoryAssigned) { echo "<th>Category</th>"; } ?>
 
             <?php
-
-              include '../../connection/conn.php';
-
               $sql = "SELECT * FROM tbl_category 
                       WHERE status = 'Show' 
                       ORDER BY category_id ASC";
@@ -45,9 +52,9 @@ $type = $row['based_type'];
               $categoryList = [];
 
               if ($resultCategory && $resultCategory->num_rows > 0) {
-                while($row = $resultCategory->fetch_assoc()) {
-                  $categoryList[] = $row;
-                  $categoryName = $row['category_name'];
+                while($rowCat = $resultCategory->fetch_assoc()) {
+                  $categoryList[] = $rowCat;
+                  $categoryName = $rowCat['category_name'];
                   echo "<th>".$categoryName."</th>";
                 }
                 echo "<th>Total</th>";
@@ -69,8 +76,6 @@ $type = $row['based_type'];
             }
           ?>
           <?php
-           
-
             $sql = "SELECT * FROM tbl_candidates 
                     WHERE status = 'Allow' 
                     ORDER BY cand_no ASC";
@@ -79,16 +84,23 @@ $type = $row['based_type'];
 
             if ($resultCand->num_rows > 0) {
 
-              while($row = $resultCand->fetch_assoc()) {
+              while($rowCand = $resultCand->fetch_assoc()) {
 
-                $candId = $row['cand_id']; 
-                $candNo = $row['cand_no'];
-                $candName = $row['cand_name'];
+                $candId = $rowCand['cand_id']; 
+                $candNo = $rowCand['cand_no'];
+                $candName = $rowCand['cand_name'];
+                $candCategory = strtoupper(trim($rowCand['cand_category'] ?? ''));
+                if ($candCategory === '' || $candCategory === 'NONE') {
+                    $candCategory = '';
+                }
 
                 echo "<tr>";
                 
                 echo "<td align='center'>".$candNo."</td>";
-                echo "<td align='center'>".$candName."</td>";
+                echo "<td align='center'>".htmlspecialchars($candName, ENT_QUOTES, 'UTF-8')."</td>";
+                if ($hasAnyCategoryAssigned) {
+                    echo "<td align='center'>".$candCategory."</td>";
+                }
 
                 $regularScores = [];
                 $regularTotal = 0;

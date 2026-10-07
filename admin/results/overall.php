@@ -1,6 +1,16 @@
 <?php
 include '../config/config.php'; 
-$type = $configRow['based_type'] ?? $row['based_type']; // Safely handles configurations from your row array
+$type = $configRow['based_type'] ?? $row['based_type'];
+
+include '../../connection/conn.php';
+$hasAnyCategoryAssigned = false;
+$checkCatSql = "SELECT COUNT(*) as cnt FROM tbl_candidates WHERE status = 'Allow' AND cand_category IS NOT NULL AND TRIM(cand_category) != '' AND UPPER(TRIM(cand_category)) != 'NONE'";
+$checkCatRes = $conn->query($checkCatSql);
+if ($checkCatRes && $checkCatRow = $checkCatRes->fetch_assoc()) {
+    if ($checkCatRow['cnt'] > 0) {
+        $hasAnyCategoryAssigned = true;
+    }
+}
 ?>
 
 <!-- Overall result tab pane -->
@@ -30,11 +40,9 @@ $type = $configRow['based_type'] ?? $row['based_type']; // Safely handles config
 
             <th><?php echo $type; ?> No</th>
             <th><?php echo $type; ?> Name</th>
+            <?php if ($hasAnyCategoryAssigned) { echo "<th>Category</th>"; } ?>
 
             <?php
-
-              include '../../connection/conn.php';
-
               $sqlCategoryHeader = "SELECT * FROM tbl_category 
                                     WHERE status = 'Show' 
                                     ORDER BY category_id ASC";
@@ -74,10 +82,17 @@ $type = $configRow['based_type'] ?? $row['based_type']; // Safely handles config
                 $candId = $rowCand['cand_id']; 
                 $candNo = $rowCand['cand_no'];
                 $candName = $rowCand['cand_name'];
+                $candCategory = strtoupper(trim($rowCand['cand_category'] ?? ''));
+                if ($candCategory === '' || $candCategory === 'NONE') {
+                    $candCategory = '';
+                }
 
                 echo "<tr>";
                 echo "<td align='center'>".$candNo."</td>";
                 echo "<td align='center'>".htmlspecialchars($candName, ENT_QUOTES, 'UTF-8')."</td>";
+                if ($hasAnyCategoryAssigned) {
+                    echo "<td align='center'>".$candCategory."</td>";
+                }
 
                 $regularScores = [];
                 $regularTotal = 0;
