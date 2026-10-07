@@ -1,5 +1,5 @@
 <?php
-include '../config/config.php'; 
+include '../config/config.php';
 $type = $row['based_type'];
 ?>
 
@@ -176,9 +176,9 @@ $type = $row['based_type'];
           // ==========================================
           // PART B: CRITERIA-BASED CATEGORY RANKINGS
           // ==========================================
-          $sqlCatCriteria = "SELECT DISTINCT c.* FROM tbl_category c 
-                             INNER JOIN tbl_criteria cr ON c.category_id = cr.category_id 
-                             WHERE c.status = 'Show' 
+          $sqlCatCriteria = "SELECT DISTINCT c.* FROM tbl_category c
+                             INNER JOIN tbl_criteria cr ON c.category_id = cr.category_id
+                             WHERE c.status = 'Show'
                              ORDER BY c.category_id ASC";
           $resCatCriteria = $conn->query($sqlCatCriteria);
           $criteriaCategoryList = [];
@@ -294,8 +294,8 @@ $type = $row['based_type'];
 
         <!-- Signature -->
         <?php
-          $sqlJudges = "SELECT DISTINCT u.* FROM tbl_users AS u, tbl_scores AS s 
-                        WHERE u.user_id = s.user_id AND u.status = 'Active' 
+          $sqlJudges = "SELECT DISTINCT u.* FROM tbl_users AS u, tbl_scores AS s
+                        WHERE u.user_id = s.user_id AND u.status = 'Active'
                         ORDER BY u.user_id ASC";
           $resultJudges = $conn->query($sqlJudges);
 
