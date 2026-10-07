@@ -46,6 +46,7 @@
         <label>Category</label>
         <select class="form-control validate" name="candCategory" title="Category">
             <option value="" disabled selected>Select Category . . .</option>
+            <option value="NONE">NONE</option>
             <option value="FEMALE">FEMALE</option>
             <option value="MALE">MALE</option>
             <option value="GROUP">GROUP</option>
