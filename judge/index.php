@@ -149,14 +149,6 @@ $conn->close();
       height: 150px;
     }
 
-    /* Add Animation - Zoom in the Modal */
-    /* #img01, #caption {
-      -webkit-animation-name: zoom;
-      -webkit-animation-duration: 0.5s;
-      animation-name: zoom;
-      animation-duration: 0.5s;
-    } */
-
     @-webkit-keyframes zoom {
       from {-webkit-transform:scale(0)}
       to {-webkit-transform:scale(1)}
@@ -232,7 +224,7 @@ $conn->close();
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Results">
           <a class="nav-link" onclick="loadJudgePage('scores/scores.php');">
             <i class="fa fa-fw fa-star"></i>
-            <span class="nav-Link-text">My Scores</span>
+            <span class="nav-link-text">My Scores</span>
           </a>
         </li>
 
@@ -324,6 +316,14 @@ $conn->close();
     }
 
     loadJudgePage('candidates/candidates.php');
+
+    // Automatically collapse the mobile navbar drawer when a link is clicked on small screens
+    $('.navbar-nav a.nav-link').on('click', function() {
+      var $navbarCollapse = $('#navbarResponsive');
+      if ($navbarCollapse.hasClass('show')) {
+        $navbarCollapse.collapse('hide');
+      }
+    });
 
     $(".navbar-sidenav a").on("click", function() {
       $(".navbar-sidenav").find(".active").removeClass("active");
