@@ -213,17 +213,26 @@ $conn->close();
 
       <ul class="navbar-nav navbar-sidenav" id="exampleAccordion">
 
+        <!-- Option A: Standard Individual Card View -->
         <li class="nav-item active" data-toggle="tooltip" data-placement="right" title="Candidates">
           <a class="nav-link" onclick="loadJudgePage('candidates/candidates.php');">
             <i class="fa fa-fw fa-group"></i>
-            <span class="nav-link-text"><?php echo $type; ?>s</span>
+            <span class="nav-link-text"><?php echo $type; ?>s (Card View)</span>
+          </a>
+        </li>
+
+        <!-- Option B: New Master Tabulation Sheet View -->
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Tabulation Sheet">
+          <a class="nav-link" onclick="loadJudgePage('tabulate/candidates.php');">
+            <i class="fa fa-fw fa-table"></i>
+            <span class="nav-link-text"><?php echo $type; ?>s Tabulation Sheet</span>
           </a>
         </li>
         
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Results">
           <a class="nav-link" onclick="loadJudgePage('scores/scores.php');">
             <i class="fa fa-fw fa-star"></i>
-            <span class="nav-link-text">My Scores</span>
+            <span class="nav-Link-text">My Scores</span>
           </a>
         </li>
 
