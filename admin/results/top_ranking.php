@@ -1,5 +1,5 @@
 <?php
-include '../config/config.php'; 
+include '../config/config.php';
 $type = $row['based_type'];
 ?>
 
@@ -9,7 +9,7 @@ $type = $row['based_type'];
   <div class="card mb-3">
 
     <div class="card-header">
-      <i class="fa fa-trophy"></i> Top Ranking — Overall & Per Category (By Gender/Group)
+      <i class="fa fa-trophy"></i> Top Ranking — Overall & Per Category
 
       <button class="pull-right btn btn-success" 
           onclick="PrintElem('printableAreaTopRanking', 'Top Ranking Result');">
@@ -53,10 +53,20 @@ $type = $row['based_type'];
 
           $hasAnyRanking = false;
 
+          // Helper function mapping none/empty to a blank string group key
+          function getGroupKey($candCat) {
+              $val = strtoupper(trim($candCat ?? ''));
+              if ($val === '' || $val === 'NONE') {
+                  return '';
+              }
+              return $val;
+          }
+
           // ==========================================
-          // PART A: OVERALL RANKINGS BY GENDER/GROUP
+          // PART A: OVERALL RANKINGS
           // ==========================================
           $overallGroups = [
+              '' => [],
               'FEMALE' => [],
               'MALE' => [],
               'GROUP' => []
@@ -66,7 +76,11 @@ $type = $row['based_type'];
               $candId = $candRow['cand_id']; 
               $candNo = $candRow['cand_no'];
               $candName = $candRow['cand_name'];
-              $candCategory = strtoupper(trim($candRow['cand_category'] ?? ''));
+              $candCategory = getGroupKey($candRow['cand_category']);
+              
+              if (!array_key_exists($candCategory, $overallGroups)) {
+                  $candCategory = '';
+              }
 
               $regularTotal = 0;
 
@@ -109,12 +123,10 @@ $type = $row['based_type'];
                   'score' => $overallScore
               ];
 
-              if (array_key_exists($candCategory, $overallGroups)) {
-                  $overallGroups[$candCategory][] = $candidateEntry;
-              }
+              $overallGroups[$candCategory][] = $candidateEntry;
           }
 
-          foreach ($overallGroups as $genderKey => $candList) {
+          foreach ($overallGroups as $groupKey => $candList) {
               if (empty($candList)) {
                   continue;
               }
@@ -124,10 +136,12 @@ $type = $row['based_type'];
               usort($candList, function($a, $b) {
                   return $b['score'] <=> $a['score'];
               });
+
+              $headerTitle = ($groupKey === '') ? 'Overall Ranking' : 'Overall Ranking — ' . $groupKey;
         ?>
 
           <h4 class="text-secondary mt-4 mb-2">
-            <i class="fa fa-trophy"></i> Overall Ranking — <span class="text-dark"><?php echo $genderKey; ?></span>
+            <i class="fa fa-trophy"></i> <?php echo $headerTitle; ?>
           </h4>
           
           <table class="table table-bordered table-hover table-sm mb-4" width="100%" cellspacing="0">
@@ -160,11 +174,11 @@ $type = $row['based_type'];
 
 
           // ==========================================
-          // PART B: CRITERIA-BASED CATEGORY RANKINGS BY GENDER/GROUP
+          // PART B: CRITERIA-BASED CATEGORY RANKINGS
           // ==========================================
-          $sqlCatCriteria = "SELECT DISTINCT c.* FROM tbl_category c 
-                             INNER JOIN tbl_criteria cr ON c.category_id = cr.category_id 
-                             WHERE c.status = 'Show' 
+          $sqlCatCriteria = "SELECT DISTINCT c.* FROM tbl_category c
+                             INNER JOIN tbl_criteria cr ON c.category_id = cr.category_id
+                             WHERE c.status = 'Show'
                              ORDER BY c.category_id ASC";
           $resCatCriteria = $conn->query($sqlCatCriteria);
           $criteriaCategoryList = [];
@@ -182,6 +196,7 @@ $type = $row['based_type'];
               $catName = $cat['category_name'];
 
               $categoriesData = [
+                  '' => [],
                   'FEMALE' => [],
                   'MALE' => [],
                   'GROUP' => []
@@ -191,7 +206,11 @@ $type = $row['based_type'];
                   $candId = $candRow['cand_id']; 
                   $candNo = $candRow['cand_no'];
                   $candName = $candRow['cand_name'];
-                  $candCategory = strtoupper(trim($candRow['cand_category'] ?? ''));
+                  $candCategory = getGroupKey($candRow['cand_category']);
+                  
+                  if (!array_key_exists($candCategory, $categoriesData)) {
+                      $candCategory = '';
+                  }
 
                   $categoryTotalScore = 0;
                   $sqlCriteria = "SELECT criteria_id FROM tbl_criteria WHERE category_id = '$catId'";
@@ -218,12 +237,10 @@ $type = $row['based_type'];
                     'score' => $categoryTotalScore
                   ];
 
-                  if (array_key_exists($candCategory, $categoriesData)) {
-                      $categoriesData[$candCategory][] = $candidateEntry;
-                  }
+                  $categoriesData[$candCategory][] = $candidateEntry;
               }
 
-              foreach ($categoriesData as $genderKey => $catCandidates) {
+              foreach ($categoriesData as $groupKey => $catCandidates) {
                   if (empty($catCandidates)) {
                       continue;
                   }
@@ -233,10 +250,12 @@ $type = $row['based_type'];
                   usort($catCandidates, function($a, $b) {
                       return $b['score'] <=> $a['score'];
                   });
+
+                  $headerTitle = ($groupKey === '') ? htmlspecialchars($catName, ENT_QUOTES, 'UTF-8') : htmlspecialchars($catName, ENT_QUOTES, 'UTF-8') . ' — ' . $groupKey;
         ?>
 
           <h4 class="text-secondary mt-4 mb-2">
-            <i class="fa fa-trophy"></i> <?php echo htmlspecialchars($catName, ENT_QUOTES, 'UTF-8'); ?> — <span class="text-dark"><?php echo $genderKey; ?></span>
+            <i class="fa fa-trophy"></i> <?php echo $headerTitle; ?>
           </h4>
           
           <table class="table table-bordered table-hover table-sm mb-4" width="100%" cellspacing="0">
@@ -265,7 +284,7 @@ $type = $row['based_type'];
           </table>
 
         <?php 
-              } // end foreach genderKey
+              } // end foreach groupKey
           } // end foreach criteriaCategoryList
 
           if (!$hasAnyRanking) {
@@ -275,8 +294,8 @@ $type = $row['based_type'];
 
         <!-- Signature -->
         <?php
-          $sqlJudges = "SELECT DISTINCT u.* FROM tbl_users AS u, tbl_scores AS s 
-                        WHERE u.user_id = s.user_id AND u.status = 'Active' 
+          $sqlJudges = "SELECT DISTINCT u.* FROM tbl_users AS u, tbl_scores AS s
+                        WHERE u.user_id = s.user_id AND u.status = 'Active'
                         ORDER BY u.user_id ASC";
           $resultJudges = $conn->query($sqlJudges);
 

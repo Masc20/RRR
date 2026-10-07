@@ -19,6 +19,22 @@
     $categoryName = $rowCatMain['category_name'];
     $isTotalRanking = (strcasecmp(trim($categoryName), 'total ranking') === 0);
 
+    // 1. Fetch allowed candidates and check if any have an assigned category
+    $sqlCand = "SELECT * FROM tbl_candidates WHERE status = 'Allow' ORDER BY cand_no ASC";
+    $resultCand = $conn->query($sqlCand);
+    $allCandidates = [];
+    $hasAnyCategoryAssigned = false;
+
+    if ($resultCand && $resultCand->num_rows > 0) {
+        while($rowCand = $resultCand->fetch_assoc()) {
+            $candCat = strtoupper(trim($rowCand['cand_category'] ?? ''));
+            if ($candCat !== '' && $candCat !== 'NONE') {
+                $hasAnyCategoryAssigned = true;
+            }
+            $allCandidates[] = $rowCand;
+        }
+    }
+
 ?>
 
 <!-- Tab pane for each category -->
@@ -38,11 +54,12 @@
 
     <div class="container mt-4 ml-3">
       <?php
+        // Dynamically set starting column index for toggles based on whether Category column exists
+        $ctr = $hasAnyCategoryAssigned ? 3 : 2;
+
         if ($isTotalRanking) {
-            // For Total Ranking, list the other active categories as buttons/toggles
             $sqlOther = "SELECT * FROM tbl_category WHERE status = 'Show' AND category_id != '$categoryId' ORDER BY category_id ASC";
             $resOther = $conn->query($sqlOther);
-            $ctr = 2;
             if ($resOther && $resOther->num_rows > 0) {
                 while($rOther = $resOther->fetch_assoc()) {
       ?>
@@ -55,7 +72,6 @@
             }
             echo '<a href="" class="toggle-vis btn btn-success" data-column="'.$ctr.'"><i class="fa fa-fw fa-check"></i>Total</a>';
         } else {
-            // Standard category criteria buttons
             $sql = "SELECT * FROM tbl_criteria 
                     WHERE category_id = '$categoryId' 
                     ORDER BY criteria_id ASC";
@@ -63,7 +79,6 @@
             $resultToggle = $conn->query($sql);
 
             if ($resultToggle->num_rows > 0) {
-              $ctr = 2;
               while($rowCritToggle = $resultToggle->fetch_assoc()) {
         ?>
               <a href="" class="toggle-vis btn btn-success" data-column="<?php echo $ctr; ?>">
@@ -96,6 +111,10 @@
           <?php
             echo "<th>".$type." No.</th>";
             echo "<th>".$type." Name</th>";
+            
+            if ($hasAnyCategoryAssigned) {
+                echo "<th>Category</th>";
+            }
 
             if ($isTotalRanking) {
                 $sqlHeaderCats = "SELECT category_name FROM tbl_category WHERE status = 'Show' AND category_id != '$categoryId' ORDER BY category_id ASC";
@@ -127,25 +146,27 @@
       <!-- table body -->
       <tbody>
           <?php
-            $sqlCand = "SELECT * FROM tbl_candidates 
-                        WHERE status = 'Allow' 
-                        ORDER BY cand_no ASC";
-
-            $resultCand = $conn->query($sqlCand);
-
-            if ($resultCand->num_rows > 0) {
-              while($rowCand = $resultCand->fetch_assoc()) {
+            if (!empty($allCandidates)) {
+              foreach ($allCandidates as $rowCand) {
 
                 $candId = $rowCand['cand_id']; 
                 $candNo = $rowCand['cand_no'];
                 $candName = $rowCand['cand_name'];
+                
+                $candCategory = strtoupper(trim($rowCand['cand_category'] ?? ''));
+                if ($candCategory === '' || $candCategory === 'NONE') {
+                    $candCategory = '';
+                }
 
                 echo "<tr>";
                 echo "<td align='center'>".$candNo."</td>";
                 echo "<td align='center'>".htmlspecialchars($candName, ENT_QUOTES, 'UTF-8')."</td>";
+                
+                if ($hasAnyCategoryAssigned) {
+                    echo "<td align='center'>".$candCategory."</td>";
+                }
 
                 if ($isTotalRanking) {
-                    // Calculate and display scores of all other categories combined for Total Ranking tab
                     $sqlOtherCats = "SELECT category_id, percentage FROM tbl_category WHERE status = 'Show' AND category_id != '$categoryId' ORDER BY category_id ASC";
                     $resOtherCats = $conn->query($sqlOtherCats);
                     
@@ -179,7 +200,6 @@
                     echo "<td align='center' class='font-weight-bold'>".number_format($grandCategoryTotal, 2, '.', '')."</td>";
 
                 } else {
-                    // Standard Category Loop
                     $total = 0;
                     $sql = "SELECT * FROM tbl_criteria 
                             WHERE category_id = '$categoryId' 
@@ -202,7 +222,9 @@
 
                         if ($resultScore && $resultScore->num_rows > 0) {
                           $rowScoreData = $resultScore->fetch_assoc();  
-                          $scorePoints = (is_null($rowScoreData['score_points'])) ? 0 : (float)$rowScoreData['score_points'];
+                          if ($rowScoreData && !is_null($rowScoreData['score_points'])) {
+                              $scorePoints = (float)$rowScoreData['score_points'];
+                          }
                         }
 
                         echo "<td align='center'>".number_format($scorePoints, 2, '.', '')."</td>";          

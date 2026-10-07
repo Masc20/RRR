@@ -57,6 +57,16 @@
           }
           
           if (!empty($criteriaList)) { 
+
+              // Check if any allowed candidate has a non-empty category
+              $hasAnyCategory = false;
+              $checkCatSql = "SELECT COUNT(*) as cnt FROM tbl_candidates WHERE status = 'Allow' AND cand_category IS NOT NULL AND TRIM(cand_category) != ''";
+              $checkCatRes = $conn->query($checkCatSql);
+              if ($checkCatRes && $checkCatRow = $checkCatRes->fetch_assoc()) {
+                  if ($checkCatRow['cnt'] > 0) {
+                      $hasAnyCategory = true;
+                  }
+              }
         ?>
 
         <table class="table table-bordered table-hover table-sm dataTable judge-score-table" width="100%" cellspacing="0">
@@ -68,6 +78,9 @@
          
               echo "<th class='text-center'>".$type." No</th>";
               echo "<th class='text-center'>".$type." / House</th>";
+              if ($hasAnyCategory) {
+                  echo "<th class='text-center'>Category</th>";
+              }
 
               foreach($criteriaList as $crit) { 
                   echo "<th class='text-center'>".htmlspecialchars($crit['criteria_name'], ENT_QUOTES, 'UTF-8')."</th>"; 
@@ -92,6 +105,7 @@
                   $candId = $candRow['cand_id'];
                   $candNo = $candRow['cand_no'];
                   $candName = $candRow['cand_name'];
+                  $candCat = trim($candRow['cand_category'] ?? '');
 
                   $houseSlug = strtolower(trim($candName));
                   $genderChar = strtoupper(substr(trim($candNo), -1));
@@ -112,6 +126,14 @@
                     echo " <span class='division-pill division-pill-male ml-1'><i class='fa fa-male'></i> M</span>";
                   }
                   echo "</td>";
+
+                  if ($hasAnyCategory) {
+                      echo "<td align='center'>";
+                      if (!empty($candCat)) {
+                          echo "<span class='badge badge-info'>".htmlspecialchars($candCat, ENT_QUOTES, 'UTF-8')."</span>";
+                      }
+                      echo "</td>";
+                  }
 
                   $grandTotal = 0;
 
