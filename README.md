@@ -1,4 +1,5 @@
 # RAMP REIGN AND RUNWAY (RRR)
+
 ### Real-Time Pageant & Intramural House Cup Tabulation System
 
 [![PHP Version](https://img.shields.io/badge/PHP-%3E%3D%207.4%20%7C%208.3-777bb4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
@@ -11,6 +12,7 @@
 ---
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [Repository Directory Structure](#repository-directory-structure)
 3. [Central Scoring Engine & Auditing Specification](#central-scoring-engine--auditing-specification)
@@ -30,6 +32,7 @@
 **RAMP REIGN AND RUNWAY (RRR)** is an automated, real-time scoring, tabulation, and event presentation platform built for pageants, runway competitions, and intramural House Cup events.
 
 ### Key Capabilities
+
 - **Tactile Adjudicator Workspace:** High-contrast slider controls with physical ruler markings and tactile grip lines, real-time score totalizer badges, and smooth tab transitions.
 - **Audit-Grade Calculation Engine:** All mathematical formulas, criteria averaging, category percentage weightings, and division rankings are isolated in a single, self-documenting engine ([`lib/scorecalculator.php`](lib/scorecalculator.php)).
 - **Dual Presentation Layer:** Dedicated administrative console with printable score sheets alongside public projector/tabulation views.
@@ -163,10 +166,10 @@ The adjudicator portal (`/judge/`) includes custom physical UI controls implemen
 
 ### Prerequisites
 
-* **Web Server:** [XAMPP](https://www.apachefriends.org/), WAMP, LAMP, or any Apache/Nginx stack.
-* **PHP:** Version `>= 7.4` (fully tested up to PHP 8.2) with `mysqli` and `gd` extensions enabled.
-* **Database:** MySQL `5.7+` or MariaDB `10.4+`.
-* **Web Browser:** Modern browser (Chrome, Safari, Edge, Firefox) with JavaScript enabled.
+- **Web Server:** [XAMPP](https://www.apachefriends.org/), WAMP, LAMP, or any Apache/Nginx stack.
+- **PHP:** Version `>= 7.4` (fully tested up to PHP 8.2) with `mysqli` and `gd` extensions enabled.
+- **Database:** MySQL `5.7+` or MariaDB `10.4+`.
+- **Web Browser:** Modern browser (Chrome, Safari, Edge, Firefox) with JavaScript enabled.
 
 ---
 
@@ -174,9 +177,9 @@ The adjudicator portal (`/judge/`) includes custom physical UI controls implemen
 
 Clone or extract the repository into your local web server's document root:
 
-* **XAMPP (Windows):** `C:\xampp\htdocs\RRR_2024`
-* **XAMPP (macOS):** `/Applications/XAMPP/xamppfiles/htdocs/RRR_2024`
-* **Linux (Apache):** `/var/www/html/RRR_2024`
+- **XAMPP (Windows):** `C:\xampp\htdocs\RRR_2024`
+- **XAMPP (macOS):** `/Applications/XAMPP/xamppfiles/htdocs/RRR_2024`
+- **Linux (Apache):** `/var/www/html/RRR_2024`
 
 ```bash
 git clone https://github.com/Masc20/RRR.git C:/xampp/htdocs/RRR_2024
@@ -268,10 +271,10 @@ The seed database [`rrr.sql`](rrr.sql) includes pre-configured administrative an
 | :--- | :--- | :--- |
 | **`tbl_config`** | Global event parameters and session locking states | `config_id`, `event_title`, `based_type` (`Candidate`/`House`), `judge_status` (`Open`/`Close`) |
 | **`tbl_users`** | User credentials, roles, and account status | `user_id`, `full_name`, `user_name`, `pass_word`, `user_type` (`Admin`/`Chairman`/`Judge`), `status` |
-| **`tbl_candidates`**| Contestants/Entries, division numbering, photos | `cand_id`, `cand_no` (`1F`, `1M`, etc.), `cand_name`, `cand_pic`, `status` (`Allow`/`Eliminate`) |
-| **`tbl_category`**  | Competition rounds/categories and percentage weight | `category_id`, `category_name`, `percentage`, `status` (`Show`/`Hide`) |
-| **`tbl_criteria`**  | Specific scoring rubrics under each category | `criteria_id`, `criteria_name`, `criteria_points`, `category_id`, `status` (`Show`/`Hide`) |
-| **`tbl_scores`**    | Atomic scores submitted by judges | `score_id`, `category_id`, `criteria_id`, `user_id`, `cand_id`, `score_points`, `date_saved` |
+| **`tbl_candidates`** | Contestants/Entries, division numbering, photos | `cand_id`, `cand_no` (`1F`, `1M`, etc.), `cand_name`, `cand_pic`, `status` (`Allow`/`Eliminate`) |
+| **`tbl_category`** | Competition rounds/categories and percentage weight | `category_id`, `category_name`, `percentage`, `status` (`Show`/`Hide`) |
+| **`tbl_criteria`** | Specific scoring rubrics under each category | `criteria_id`, `criteria_name`, `criteria_points`, `category_id`, `status` (`Show`/`Hide`) |
+| **`tbl_scores`** | Atomic scores submitted by judges | `score_id`, `category_id`, `criteria_id`, `user_id`, `cand_id`, `score_points`, `date_saved` |
 | **`online_judges`** | Active session tracking for connected adjudicators | `session_id`, `user_id`, `time` |
 
 ---
@@ -293,21 +296,21 @@ The seed database [`rrr.sql`](rrr.sql) includes pre-configured administrative an
 
 ### 1. Database Connection Error ("Connection failed")
 
-* Verify MySQL is running in your XAMPP Control Panel.
-* Confirm that the database name in [`connection/conn.php`](connection/conn.php) matches `rrr`.
-* If you set a root password in MySQL, ensure it is entered into the `$password` parameter in `conn.php`.
+- Verify MySQL is running in your XAMPP Control Panel.
+- Confirm that the database name in [`connection/conn.php`](connection/conn.php) matches `rrr`.
+- If you set a root password in MySQL, ensure it is entered into the `$password` parameter in `conn.php`.
 
 ### 2. "Judging is now closed. Thank you." Prompt Appears
 
-* This is the session lock feature configured in `tbl_config`.
-* Log in as **Admin** (`/admin/`), navigate to **Event Configuration**, and set **Judge Status** to **Open**.
+- This is the session lock feature configured in `tbl_config`.
+- Log in as **Admin** (`/admin/`), navigate to **Event Configuration**, and set **Judge Status** to **Open**.
 
 ### 3. Contestant Photos Fail to Upload
 
-* Check write permissions on the `uploads/` folder (`chmod -R 775 uploads/`).
-* Ensure PHP `upload_max_filesize` and `post_max_size` in `php.ini` are set to at least `8M`.
+- Check write permissions on the `uploads/` folder (`chmod -R 775 uploads/`).
+- Ensure PHP `upload_max_filesize` and `post_max_size` in `php.ini` are set to at least `8M`.
 
 ### 4. How Do Alphanumeric Candidate Numbers Work (`1F`, `1M`)?
 
-* In `tbl_candidates`, `cand_no` is stored as `VARCHAR(11)`.
-* Numbers ending with `F` are categorized into the **Female Division**, numbers ending with `M` into the **Male Division**, and numbers ending with `G` into the **Group Division**. All sorting and ranking algorithms handle this automatically via [`ScoreCalculator`](lib/scorecalculator.php).
+- In `tbl_candidates`, `cand_no` is stored as `VARCHAR(11)`.
+- Numbers ending with `F` are categorized into the **Female Division**, numbers ending with `M` into the **Male Division**, and numbers ending with `G` into the **Group Division**. All sorting and ranking algorithms handle this automatically via [`ScoreCalculator`](lib/scorecalculator.php).
