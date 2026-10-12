@@ -4,6 +4,7 @@
   $type = $row['based_type'];
 
   include '../../connection/conn.php';
+  require_once __DIR__ . '/../../lib/scorecalculator.php';
 
   $sql = "SELECT * FROM tbl_category 
           WHERE status = 'Show' 
@@ -17,20 +18,16 @@
 
     $categoryId = $rowCatMain['category_id'];
     $categoryName = $rowCatMain['category_name'];
-    $isTotalRanking = (strcasecmp(trim($categoryName), 'total ranking') === 0);
+    $isTotalRanking = ScoreCalculator::isTotalRanking($categoryName);
 
     // 1. Fetch allowed candidates and check if any have an assigned category
+    $hasAnyCategoryAssigned = ScoreCalculator::hasAnyCategoryAssigned($conn);
     $sqlCand = "SELECT * FROM tbl_candidates WHERE status = 'Allow' ORDER BY cand_no ASC";
     $resultCand = $conn->query($sqlCand);
     $allCandidates = [];
-    $hasAnyCategoryAssigned = false;
 
     if ($resultCand && $resultCand->num_rows > 0) {
         while($rowCand = $resultCand->fetch_assoc()) {
-            $candCat = strtoupper(trim($rowCand['cand_category'] ?? ''));
-            if ($candCat !== '' && $candCat !== 'NONE') {
-                $hasAnyCategoryAssigned = true;
-            }
             $allCandidates[] = $rowCand;
         }
     }
@@ -58,17 +55,14 @@
         $ctr = $hasAnyCategoryAssigned ? 3 : 2;
 
         if ($isTotalRanking) {
-            $sqlOther = "SELECT * FROM tbl_category WHERE status = 'Show' AND category_id != '$categoryId' ORDER BY category_id ASC";
-            $resOther = $conn->query($sqlOther);
-            if ($resOther && $resOther->num_rows > 0) {
-                while($rOther = $resOther->fetch_assoc()) {
+            $otherCats = ScoreCalculator::getActiveCategories($conn, false);
+            foreach ($otherCats as $rOther) {
       ?>
                   <a href="" class="toggle-vis btn btn-success" data-column="<?php echo $ctr; ?>">
-                    <i class="fa fa-fw fa-check"></i> <?php echo $rOther['category_name']; ?>
+                    <i class="fa fa-fw fa-check"></i> <?php echo htmlspecialchars($rOther['category_name']); ?>
                   </a>
       <?php
                   $ctr++;
-                }
             }
             echo '<a href="" class="toggle-vis btn btn-success" data-column="'.$ctr.'"><i class="fa fa-fw fa-check"></i>Total</a>';
         } else {
@@ -117,12 +111,9 @@
             }
 
             if ($isTotalRanking) {
-                $sqlHeaderCats = "SELECT category_name FROM tbl_category WHERE status = 'Show' AND category_id != '$categoryId' ORDER BY category_id ASC";
-                $resHeaderCats = $conn->query($sqlHeaderCats);
-                if ($resHeaderCats && $resHeaderCats->num_rows > 0) {
-                    while($rHead = $resHeaderCats->fetch_assoc()) {
-                        echo "<th>".$rHead['category_name']."</th>";
-                    }
+                $otherCats = ScoreCalculator::getActiveCategories($conn, false);
+                foreach ($otherCats as $rHead) {
+                    echo "<th>".htmlspecialchars($rHead['category_name'])."</th>";
                 }
                 echo "<th>Total</th>";
             } else {
@@ -153,10 +144,7 @@
                 $candNo = $rowCand['cand_no'];
                 $candName = $rowCand['cand_name'];
                 
-                $candCategory = strtoupper(trim($rowCand['cand_category'] ?? ''));
-                if ($candCategory === '' || $candCategory === 'NONE') {
-                    $candCategory = '';
-                }
+                $candCategory = ScoreCalculator::determineDivision($candNo, $rowCand['cand_category'] ?? null);
 
                 echo "<tr>";
                 echo "<td align='center'>".$candNo."</td>";
@@ -167,72 +155,31 @@
                 }
 
                 if ($isTotalRanking) {
-                    $sqlOtherCats = "SELECT category_id, percentage FROM tbl_category WHERE status = 'Show' AND category_id != '$categoryId' ORDER BY category_id ASC";
-                    $resOtherCats = $conn->query($sqlOtherCats);
+                    $breakdown = ScoreCalculator::getCandidateScoreBreakdown($conn, $candId);
                     
-                    $grandCategoryTotal = 0;
-
-                    if ($resOtherCats && $resOtherCats->num_rows > 0) {
-                        while($rCat = $resOtherCats->fetch_assoc()) {
-                            $oCatId = $rCat['category_id'];
-                            $oPercent = (float)$rCat['percentage'];
-                            
-                            $subCatScore = 0;
-                            $sqlCrit = "SELECT criteria_id FROM tbl_criteria WHERE category_id = '$oCatId'";
-                            $resCrit = $conn->query($sqlCrit);
-                            if ($resCrit && $resCrit->num_rows > 0) {
-                                while($rCrit = $resCrit->fetch_assoc()) {
-                                    $critId = $rCrit['criteria_id'];
-                                    $sqlSc = "SELECT AVG(score_points) as pts FROM tbl_scores WHERE cand_id = '$candId' AND criteria_id = '$critId'";
-                                    $resSc = $conn->query($sqlSc);
-                                    if ($resSc && $resSc->num_rows > 0) {
-                                        $rSc = $resSc->fetch_assoc();
-                                        $subCatScore += (float)($rSc['pts'] ?? 0);
-                                    }
-                                }
-                            }
-                            $factoredSubScore = ($oPercent / 100) * $subCatScore;
-                            $grandCategoryTotal += $factoredSubScore;
-                            
-                            echo "<td align='center'>".number_format($factoredSubScore, 2, '.', '')."</td>";
-                        }
+                    foreach ($breakdown['regular_scores'] as $catScore) {
+                        echo "<td align='center'>".ScoreCalculator::format($catScore)."</td>";
                     }
-                    echo "<td align='center' class='font-weight-bold'>".number_format($grandCategoryTotal, 2, '.', '')."</td>";
+                    echo "<td align='center' class='font-weight-bold'>".ScoreCalculator::format($breakdown['grand_total'])."</td>";
 
                 } else {
                     $total = 0;
-                    $sql = "SELECT * FROM tbl_criteria 
-                            WHERE category_id = '$categoryId' 
-                            ORDER BY criteria_id ASC";
+                    $sqlCrit = "SELECT criteria_id FROM tbl_criteria 
+                                WHERE category_id = '$categoryId' 
+                                ORDER BY criteria_id ASC";
 
-                    $resultCriteriaBody = $conn->query($sql);
+                    $resultCriteriaBody = $conn->query($sqlCrit);
 
                     if ($resultCriteriaBody && $resultCriteriaBody->num_rows > 0) {
                       while($rowCritBody = $resultCriteriaBody->fetch_assoc()) {
-
                         $criteriaId = $rowCritBody['criteria_id'];
-                        
-                        $sqlScore = "SELECT CAST(AVG(s.score_points) AS DECIMAL(10,2)) AS 'score_points' 
-                                    FROM tbl_scores AS s 
-                                    WHERE s.cand_id = '$candId' AND s.criteria_id = '$criteriaId'   
-                                    ORDER BY s.criteria_id ASC";
-
-                        $resultScore = $conn->query($sqlScore);
-                        $scorePoints = 0;
-
-                        if ($resultScore && $resultScore->num_rows > 0) {
-                          $rowScoreData = $resultScore->fetch_assoc();  
-                          if ($rowScoreData && !is_null($rowScoreData['score_points'])) {
-                              $scorePoints = (float)$rowScoreData['score_points'];
-                          }
-                        }
-
-                        echo "<td align='center'>".number_format($scorePoints, 2, '.', '')."</td>";          
+                        $scorePoints = ScoreCalculator::getCriteriaAverage($conn, $candId, $criteriaId);
+                        echo "<td align='center'>".ScoreCalculator::format($scorePoints)."</td>";          
                         $total += $scorePoints;
                       }
                     }
 
-                    echo "<td align='center'>".number_format($total, 2, '.', '')."</td>";
+                    echo "<td align='center'>".ScoreCalculator::format($total)."</td>";
                 }
 
                 echo "</tr>";
