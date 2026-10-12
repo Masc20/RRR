@@ -1,12 +1,12 @@
 
-<?php include '../results/nav_tabs.php'; ?>
+<?php include __DIR__ . '/nav_tabs.php'; ?>
 
 
 <div class="tab-content">
   
-<?php include '../results/tab_pane.php'; ?>
-<?php include '../results/overall.php'; ?>
-<?php include '../results/top_rank.php'; ?>
+<?php include __DIR__ . '/tab_pane.php'; ?>
+<?php include __DIR__ . '/overall.php'; ?>
+<?php include __DIR__ . '/top_rank.php'; ?>
 
 </div>
 

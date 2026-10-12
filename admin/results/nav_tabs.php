@@ -30,8 +30,6 @@
     }
   }
 
-  $conn->close();
-
 ?>
 
   <li class="nav-item">
