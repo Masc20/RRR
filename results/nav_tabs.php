@@ -3,7 +3,9 @@
 
 <?php
   
-  include '../../connection/conn.php';
+  if (!isset($conn) || !$conn instanceof mysqli) {
+    require_once __DIR__ . '/../connection/conn.php';
+  }
 
   $sql = "SELECT * FROM tbl_category 
           WHERE status = 'Show' 
@@ -29,8 +31,6 @@
     <?php
     }
   }
-
-  $conn->close();
 
 ?>
 

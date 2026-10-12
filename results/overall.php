@@ -1,7 +1,11 @@
 <?php
 
-include '../config/config.php'; 
-$type = $row['based_type'];
+if (file_exists(__DIR__ . '/../admin/config/config.php')) {
+  include __DIR__ . '/../admin/config/config.php';
+} elseif (file_exists(__DIR__ . '/../config/config.php')) {
+  include __DIR__ . '/../config/config.php';
+}
+$type = $row['based_type'] ?? 'Candidate';
 
 ?>
 
@@ -34,21 +38,22 @@ $type = $row['based_type'];
             <th><?php echo $type; ?> Name</th>
 
             <?php
+              if (!isset($conn) || !$conn instanceof mysqli || @!$conn->stat()) {
+                include __DIR__ . '/../connection/conn.php';
+              }
+              require_once __DIR__ . '/../lib/scorecalculator.php';
 
-              include '../../connection/conn.php';
+              $hasAnyCategoryAssigned = ScoreCalculator::hasAnyCategoryAssigned($conn);
+              if ($hasAnyCategoryAssigned) {
+                echo "<th>Category</th>";
+              }
 
-              $sqlCategoryHeader = "SELECT * FROM tbl_category 
-                                    WHERE status = 'Show' 
-                                    ORDER BY category_id ASC";
-              
-              $resultCategoryHeader = $conn->query($sqlCategoryHeader);
-              $categoryList = [];
+              $categoryList = ScoreCalculator::getActiveCategories($conn, true);
 
-              if ($resultCategoryHeader && $resultCategoryHeader->num_rows > 0) {
-                while($rowCatHeader = $resultCategoryHeader->fetch_assoc()) {
-                  $categoryList[] = $rowCatHeader;
+              if (!empty($categoryList)) {
+                foreach ($categoryList as $rowCatHeader) {
                   $categoryName = $rowCatHeader['category_name'];
-                  echo "<th>".$categoryName."</th>";
+                  echo "<th>".htmlspecialchars($categoryName, ENT_QUOTES, 'UTF-8')."</th>";
                 }
                 echo "<th class='bg-light text-primary font-weight-bold'>Grand Total</th>";
               }  
@@ -69,69 +74,39 @@ $type = $row['based_type'];
 
             $resultCand = $conn->query($sqlCand);
 
-            if ($resultCand->num_rows > 0) {
+            if ($resultCand && $resultCand->num_rows > 0) {
 
               while($rowCand = $resultCand->fetch_assoc()) {
 
                 $candId = $rowCand['cand_id']; 
                 $candNo = $rowCand['cand_no'];
                 $candName = $rowCand['cand_name'];
+                $candCategory = ScoreCalculator::determineDivision($candNo, $rowCand['cand_category'] ?? null);
 
                 echo "<tr>";
                 echo "<td align='center' class='font-weight-bold'>".$candNo."</td>";
                 echo "<td align='left'>".htmlspecialchars($candName, ENT_QUOTES, 'UTF-8')."</td>";
-
-                $regularScores = [];
-                $regularTotal = 0;
-
-                foreach ($categoryList as $cat) {
-                  $catId = $cat['category_id'];
-                  $catName = $cat['category_name'];
-                  $percent = (float)$cat['percentage'];
-
-                  if (strcasecmp(trim($catName), 'total ranking') === 0) {
-                    continue;
-                  }
-
-                  $categoryTotalScore = 0;
-                  $sqlCriteria = "SELECT criteria_id FROM tbl_criteria 
-                                  WHERE category_id = '$catId' 
-                                  ORDER BY criteria_id ASC";
-                  $resultCriteria = $conn->query($sqlCriteria);
-
-                  if ($resultCriteria && $resultCriteria->num_rows > 0) {
-                    while($rowCrit = $resultCriteria->fetch_assoc()) {
-                      $criteriaId = $rowCrit['criteria_id'];
-                      $sqlScore = "SELECT CAST(AVG(s.score_points) AS DECIMAL(10,2)) AS score_points 
-                                   FROM tbl_scores AS s 
-                                   WHERE s.cand_id = '$candId' AND s.criteria_id = '$criteriaId'";
-                      $resultScore = $conn->query($sqlScore);
-                      if ($resultScore && $resultScore->num_rows > 0) {
-                        $rowScore = $resultScore->fetch_assoc();
-                        $scorePoints = (is_null($rowScore['score_points'])) ? 0 : (float)$rowScore['score_points'];
-                        $categoryTotalScore += $scorePoints;
-                      }
-                    }
-                  }
-
-                  $factoredCategoryTotal = ($percent / 100) * $categoryTotalScore;
-                  $regularScores[$catId] = $factoredCategoryTotal;
-                  $regularTotal += $factoredCategoryTotal;
+                if ($hasAnyCategoryAssigned) {
+                  echo "<td align='center'>".$candCategory."</td>";
                 }
 
+                $breakdown = ScoreCalculator::getCandidateScoreBreakdown($conn, $candId);
+                $regularScores = $breakdown['regular_scores'];
+                $regularTotal = $breakdown['grand_total'];
+
                 foreach ($categoryList as $cat) {
                   $catId = $cat['category_id'];
                   $catName = $cat['category_name'];
 
-                  if (strcasecmp(trim($catName), 'total ranking') === 0) {
-                    echo "<td align='center'>".number_format($regularTotal, 2, '.', '')."</td>";
+                  if (ScoreCalculator::isTotalRanking($catName)) {
+                    echo "<td align='center'>".ScoreCalculator::format($regularTotal)."</td>";
                   } else {
                     $score = $regularScores[$catId] ?? 0;
-                    echo "<td align='center'>".number_format($score, 2, '.', '')."</td>";
+                    echo "<td align='center'>".ScoreCalculator::format($score)."</td>";
                   }
                 }
 
-                echo "<td align='center' class='font-weight-bold bg-light text-primary'>".number_format($regularTotal, 2, '.', '')."</td>";
+                echo "<td align='center' class='font-weight-bold bg-light text-primary'>".ScoreCalculator::format($regularTotal)."</td>";
                 
                 echo "</tr>";
                 
